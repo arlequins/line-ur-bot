@@ -25,7 +25,8 @@ export const v1 = functions.region(ENV.REGION).https.onRequest(v1ApiHandler);
 export const batch = functions
   .region(ENV.REGION)
   .runWith(BATCH.runWith.ur)
-  .pubsub.schedule(BATCH.schedule.ur)
+  .pubsub
+  .schedule(BATCH.schedule.ur)
   .timeZone(ENV.TIMEZONE)
   .onRun(async (context) => {
     logger.info(context);
