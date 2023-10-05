@@ -1,13 +1,25 @@
-import {Request, Response} from "firebase-functions";
+import { Request, Response } from "firebase-functions";
 import * as logger from "firebase-functions/logger";
-import {WebhookEvent, WebhookRequestBody} from "@line/bot-sdk";
-import lineApi from "../api/line";
-import {makeTextMessage} from "../utils/line";
+import { WebhookEvent, WebhookRequestBody } from "@line/bot-sdk";
+import lineApi from "../services/line";
+import { makeTextMessage } from "../utils/line";
+import { pullUrData } from "../usecases/ur";
+import { saveUrHistory } from "../usecases/db";
 
 const processEvent = async (event: WebhookEvent) => {
-  logger.info({
+  logger.debug({
     type: "processEvent",
     event,
+  });
+
+  // fetch database
+  const history = await pullUrData();
+
+  // save history
+  await saveUrHistory({
+    collection: 'test',
+    id: 'id',
+    data: history,
   });
 
   if (event.type === "message") {
@@ -21,10 +33,10 @@ const processEvent = async (event: WebhookEvent) => {
 
 export const main = async (
   request: Request,
-  response: Response,
+  response: Response
 ): Promise<void> => {
   const body: WebhookRequestBody = request.body;
-  logger.info({
+  logger.debug({
     type: "main",
     body,
   });

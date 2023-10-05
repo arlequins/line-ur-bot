@@ -9,9 +9,9 @@
 import * as functions from "firebase-functions";
 import * as logger from "firebase-functions/logger";
 import {ENV} from "./constants";
-import * as rootHandler from "./handlers/root";
-import v1ApiHandler from "./handlers/v1/api";
-import * as v1BatchHandler from "./handlers/v1/batch";
+import * as rootHandler from "./controllers/root";
+import v1ApiHandler from "./controllers/v1/api";
+import * as v1BatchHandler from "./controllers/v1/batch";
 import {BATCH} from "./constants/batch";
 
 // Start writing functions
