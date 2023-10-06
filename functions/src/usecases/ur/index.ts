@@ -1,8 +1,15 @@
+import {logger} from "firebase-functions/v1";
 import {OPTIONS} from "../../constants";
+import {FIRESTORE_COLLECTION, FIRESTORE_COLLECTION_HISTORY, FIRESTORE_COLLECTION_MASTER} from "../../constants/db";
 import {urAreaPrefs, targetHouseIds} from "../../constants/ur";
 import {fetchAreaList, fetchRoomList} from "../../services/ur-api";
-import {ResponseUrHouse, TypeUrRoom, TypeUrRoomPrice, ResponseUrRoom, DocRecord, DocMasterHouse, TypeUrCrawlingData, TypeUrFilterRaw, TypeUrFilterRawRoom} from "../../types";
+import {ResponseUrHouse, TypeUrRoom, TypeUrRoomPrice, ResponseUrRoom, DocRecord, DocMasterHouse, TypeUrCrawlingData, TypeUrFilterRaw, TypeUrFilterRawRoom, DocHistory} from "../../types";
 import {currentTimestamp} from "../../utils/date";
+import {getDocument, setDocument} from "../../utils/db";
+import {saveBatchCommit} from "../db";
+import {objectEqualLength} from "../../utils";
+import {makeFirstMessage, makeFourthMessage, makeSecondMessage, makeTextMessage, makeThirdMessage} from "../../utils/line";
+import {Message} from "@line/bot-sdk";
 
 const defaultParseError = (num:number) => Number.isInteger(num) ? num : -1;
 const deleteYen = (str: string) => str.replace("円", "").replaceAll(",", "");
@@ -220,4 +227,64 @@ export const filterUrData = ({master: urData}: TypeUrCrawlingData): TypeUrFilter
   }
 
   return results;
+};
+
+export const processHistory = async () => {
+  const result = {
+    messages: [] as Message[],
+  };
+
+  const urData = await pullUrData();
+
+  // update master collection
+  await setDocument<DocMasterHouse>({
+    collection: FIRESTORE_COLLECTION.MASTER,
+    id: FIRESTORE_COLLECTION_MASTER.RECENT,
+    data: urData.master,
+  });
+
+  // update records collection
+  await saveBatchCommit<TypeUrRoomPrice, DocRecord>(
+    FIRESTORE_COLLECTION.RECORDS,
+    urData.records
+  );
+
+  // push messages
+  const filteredUrData = filterUrData(urData);
+
+  // compare previous push
+  const recentHistory = await getDocument<DocHistory>({
+    collection: FIRESTORE_COLLECTION.HISTORY,
+    id: FIRESTORE_COLLECTION_HISTORY.RECENT,
+  });
+
+  logger.log({
+    pre: JSON.stringify(recentHistory?.data)?.length,
+    current: JSON.stringify(filteredUrData).length,
+    compare:
+      JSON.stringify(recentHistory?.data) === JSON.stringify(filteredUrData),
+  });
+
+  if (
+    !recentHistory ||
+    (recentHistory && !objectEqualLength(recentHistory.data, filteredUrData))
+  ) {
+    await setDocument<DocHistory>({
+      collection: FIRESTORE_COLLECTION.HISTORY,
+      id: FIRESTORE_COLLECTION_HISTORY.RECENT,
+      data: {
+        data: filteredUrData,
+        timestamp: currentTimestamp(),
+      },
+    });
+
+    result.messages = [
+      makeFirstMessage(filteredUrData),
+      makeTextMessage(makeSecondMessage(filteredUrData)),
+      makeTextMessage(makeThirdMessage(filteredUrData)),
+      makeTextMessage(makeFourthMessage(filteredUrData)),
+    ];
+  }
+
+  return result;
 };

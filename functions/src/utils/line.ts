@@ -3,7 +3,7 @@ import {TypeUrFilterRaw} from "../types";
 import {UR_BASE_URL} from "../constants/ur";
 import {currentDatetime} from "./date";
 
-const convertRentsToYen = (rents: number[]) => rents.map((rent) => `${rent.toLocaleString("ja-JP")}円`)
+const convertRentsToYen = (rents: number[]) => rents.map((rent) => `${rent.toLocaleString("ja-JP")}円`);
 
 export const makeTextMessage = (msg: string): TextMessage => ({
   type: "text",
@@ -77,7 +77,7 @@ export const makeSecondMessage = (
   for (const [index, house] of Object.entries(filteredUrData)) {
     const count = Number.parseInt(index) + 1;
     str += "---------------------------\n";
-    str += `${count}番目\n${house.name} - ${house.skcs}\n部屋${house.roomCount}個\n${convertRentsToYen(house.rents).join('|')}${count !== filteredUrData.length ? "\n" : ""}`;
+    str += `${count}番目\n${house.name} - ${house.skcs}\n部屋${house.roomCount}個\n${convertRentsToYen(house.rents).join("|")}${count !== filteredUrData.length ? "\n" : ""}`;
   }
 
   return str;
