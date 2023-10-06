@@ -1,7 +1,7 @@
 import * as cors from "cors";
 import * as express from "express";
 import authenticate from "../../middlewares";
-import * as webhookUsecases from "../../usecases/webhook";
+import * as webhookUsecases from "../../handlers/webhook";
 
 const options: cors.CorsOptions = {
   origin: true,

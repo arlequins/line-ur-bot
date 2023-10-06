@@ -1,5 +1,5 @@
 import * as logger from "firebase-functions/logger";
-import * as batchUsecases from "../../usecases/batch";
+import * as batchUsecases from "../../handlers/batch";
 
 export const fetchUrData = async (): Promise<void> => {
   try {
