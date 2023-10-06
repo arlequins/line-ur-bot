@@ -5,6 +5,12 @@
 npx firebase-tools init
 ```
 
+## setup
+```
+cd functions
+cp .env.sample .env
+```
+
 ## deploy
 ```
 npx firebase-tools deploy
