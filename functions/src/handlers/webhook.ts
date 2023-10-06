@@ -4,17 +4,17 @@ import {WebhookEvent, WebhookRequestBody} from "@line/bot-sdk";
 import lineApi from "../services/line";
 import {makeTextMessage} from "../utils/line";
 import {pullUrData} from "../usecases/ur";
-import { setDocument } from "../utils/db";
-import { DocMasterHouse, DocRecord, TypeUrRoomPrice } from "../types";
-import { saveBatchCommit } from "../usecases/db";
+import {setDocument} from "../utils/db";
+import {DocMasterHouse, DocRecord, TypeUrRoomPrice} from "../types";
+import {saveBatchCommit} from "../usecases/db";
 
 const enum FIRESTORE_COLLECTION {
-  MASTER = 'master',
-  RECORDS = 'records',
-  HISTORY = 'history',
+  MASTER = "master",
+  RECORDS = "records",
+  HISTORY = "history",
 }
 const enum FIRESTORE_COLLECTION_MASTER {
-  RECENT = 'recent',
+  RECENT = "recent",
 }
 
 const processEvent = async (event: WebhookEvent) => {
@@ -38,7 +38,7 @@ const processEvent = async (event: WebhookEvent) => {
   logger.debug({
     masterData,
     recordData,
-  })
+  });
   if (event.type === "message") {
     const replyToken = event.replyToken;
 

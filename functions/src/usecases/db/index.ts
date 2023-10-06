@@ -1,8 +1,8 @@
-import { logger } from "firebase-functions/v1";
-import { db } from "../../services/db";
+import {logger} from "firebase-functions/v1";
+import {db} from "../../services/db";
 
 // Each batch of writes can write to a maximum of 500 documents.
-const limit = 500
+const limit = 500;
 
 export const saveBatchCommit = async<A extends FirebaseFirestore.WithFieldValue<FirebaseFirestore.DocumentData>, T extends {
   docId: string

@@ -1,49 +1,49 @@
-import { OPTIONS } from "../../constants";
-import { urAreaPrefs, targetHouseIds } from "../../constants/ur";
-import { fetchAreaList, fetchRoomList } from "../../services/ur-api";
-import { ResponseUrHouse, TypeUrRoom, TypeUrRoomPrice, ResponseUrRoom, DocRecord, DocMasterHouse, TypeUrCrawlingData } from "../../types";
+import {OPTIONS} from "../../constants";
+import {urAreaPrefs, targetHouseIds} from "../../constants/ur";
+import {fetchAreaList, fetchRoomList} from "../../services/ur-api";
+import {ResponseUrHouse, TypeUrRoom, TypeUrRoomPrice, ResponseUrRoom, DocRecord, DocMasterHouse, TypeUrCrawlingData} from "../../types";
 
-const defaultParseError = (num:number) => Number.isInteger(num) ? num : -1
-const deleteYen = (str: string) => str.replace('円', '').replaceAll(',', '')
-const deleteBrackets = (str: string) => str.replace('（', '').replace('）', '')
-const convertCommonfee = (commonfee: string) => defaultParseError(Number.parseInt(deleteYen(deleteBrackets(commonfee)), 10))
-const convertRentfee = (rent: string) => defaultParseError(Number.parseInt(deleteYen(rent), 10))
+const defaultParseError = (num:number) => Number.isInteger(num) ? num : -1;
+const deleteYen = (str: string) => str.replace("円", "").replaceAll(",", "");
+const deleteBrackets = (str: string) => str.replace("（", "").replace("）", "");
+const convertCommonfee = (commonfee: string) => defaultParseError(Number.parseInt(deleteYen(deleteBrackets(commonfee)), 10));
+const convertRentfee = (rent: string) => defaultParseError(Number.parseInt(deleteYen(rent), 10));
 
 const convertRent = (rent: string) => { // 0 === "146,900円～158,300円", 0 > 162,900円
-  const delimiter= '～'
+  const delimiter= "～";
 
   if (!rent.includes(delimiter)) {
-    return [convertRentfee(rent)]
+    return [convertRentfee(rent)];
   }
 
-  const strs = rent.split(delimiter)
-  return strs.map((str) => convertRentfee(str))
-}
+  const strs = rent.split(delimiter);
+  return strs.map((str) => convertRentfee(str));
+};
 
-const convertUrArea = async({
+const convertUrArea = async ({
   tdfk,
   area,
 }: {
   tdfk: string,
   area: string,
-},list: ResponseUrHouse[]|null) => {
+}, list: ResponseUrHouse[]|null) => {
   const result: DocMasterHouse = {
     houses: [],
     housePrices: [],
     rooms: [],
     roomPrices: [],
-  }
+  };
 
   if (!list) {
-    return result
+    return result;
   }
 
-  const timestamp = new Date().valueOf()
+  const timestamp = new Date().valueOf();
 
   for (const obj of list) {
-    const roomCount = obj.roomCount
-    const rent = convertRent(obj.rent)
-    const rangefee = roomCount === 0 ? rent : []
+    const roomCount = obj.roomCount;
+    const rent = convertRent(obj.rent);
+    const rangefee = roomCount === 0 ? rent : [];
 
     const house = {
       id: obj.id,
@@ -54,19 +54,19 @@ const convertUrArea = async({
       rangefee,
       commonfee: convertCommonfee(obj.commonfee), // "（2,300円）"
       url: obj.roomUrl, // "/chintai/kanto/kanagawa/40_3410.html"
-    }
+    };
 
     const houseId = house.id;
-    const rooms = [] as TypeUrRoom[]
-    const roomPrices = [] as TypeUrRoomPrice[]
+    const rooms = [] as TypeUrRoom[];
+    const roomPrices = [] as TypeUrRoomPrice[];
 
     // target house and room
     if (roomCount > 0 && targetHouseIds.includes(houseId)) {
       const roomList = await fetchRoomList<ResponseUrRoom[]>({
-        rent_low: '',
+        rent_low: "",
         rent_high: OPTIONS.RentHigh,
-        floorspace_low: '',
-        floorspace_high: '',
+        floorspace_low: "",
+        floorspace_high: "",
         mode: "init",
         id: houseId,
         tdfk,
@@ -82,10 +82,10 @@ const convertUrArea = async({
             floorspace: roomInfo.floorspace,
             floor: roomInfo.floor,
             urlDetail: roomInfo.urlDetail,
-            madori: roomInfo.madori
-          }
+            madori: roomInfo.madori,
+          };
 
-          rooms.push(room)
+          rooms.push(room);
 
           roomPrices.push({
             id: houseId,
@@ -93,7 +93,7 @@ const convertUrArea = async({
             timestamp,
             rents: convertRent(roomInfo.rent),
             commonfee: convertCommonfee(roomInfo.commonfee),
-          })
+          });
         }
       }
     }
@@ -107,22 +107,22 @@ const convertUrArea = async({
         roomId: room.id,
         rents: room.rents,
       })),
-    }
+    };
 
-    result.houses.push(house)
-    result.housePrices.push(housePrice)
+    result.houses.push(house);
+    result.housePrices.push(housePrice);
     result.rooms = [
       ...result.rooms,
       ...rooms,
-    ]
+    ];
     result.roomPrices = [
       ...result.roomPrices,
       ...roomPrices,
-    ]
+    ];
   }
 
-  return result
-}
+  return result;
+};
 
 export const pullUrData = async (): Promise<TypeUrCrawlingData> => {
   const result = {
@@ -133,14 +133,14 @@ export const pullUrData = async (): Promise<TypeUrCrawlingData> => {
       roomPrices: [],
     } as DocMasterHouse,
     records: [] as DocRecord[],
-  }
+  };
 
   for (const pref of urAreaPrefs) {
     for (const section of pref.sections) {
       const payloadArea = {
         tdfk: pref.code,
         area: section,
-      }
+      };
 
       const responseArea = await fetchAreaList<ResponseUrHouse[]>({
         rent_low: "",
@@ -150,18 +150,18 @@ export const pullUrData = async (): Promise<TypeUrCrawlingData> => {
         ...payloadArea,
       });
 
-      const resultArea = await convertUrArea(payloadArea, responseArea)
+      const resultArea = await convertUrArea(payloadArea, responseArea);
 
-      resultArea.houses.forEach((obj) => result.master.houses.push(obj))
-      resultArea.housePrices.forEach((obj) => result.master.housePrices.push(obj))
-      resultArea.rooms.forEach((obj) => result.master.rooms.push(obj))
+      resultArea.houses.forEach((obj) => result.master.houses.push(obj));
+      resultArea.housePrices.forEach((obj) => result.master.housePrices.push(obj));
+      resultArea.rooms.forEach((obj) => result.master.rooms.push(obj));
       resultArea.roomPrices.forEach((obj) => {
-        result.master.roomPrices.push(obj)
+        result.master.roomPrices.push(obj);
         result.records.push({
           docId: `${obj.id}_${obj.roomId}`,
           data: obj,
-        })
-      })
+        });
+      });
     }
   }
 

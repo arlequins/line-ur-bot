@@ -26,4 +26,4 @@ export const VALUES = setValues();
 
 export const OPTIONS = {
   RentHigh: "100000",
-}
+};

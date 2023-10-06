@@ -10,7 +10,7 @@ export const setDocument = async<T extends FirebaseFirestore.WithFieldValue<Fire
   data: T
 }) => {
   await db.collection(collection).doc(id).set(data);
-  return data
+  return data;
 };
 
 export const getDocument = async<T>({
