@@ -71,4 +71,5 @@ export const firstTargetHouseIds: TypeUrHouseId[] = [
 
 export const targetHouseIds = [
   ...firstTargetHouseIds,
+  ...targetAotoHouseIds,
 ];
