@@ -204,7 +204,7 @@ export const filterUrData = ({master: urData}: TypeUrCrawlingData): TypeUrFilter
     }
 
     if (!filterRooms.length) {
-      continue
+      continue;
     }
 
     results.push({

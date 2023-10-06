@@ -48,6 +48,12 @@ const processEvent = async (event: WebhookEvent) => {
     id: FIRESTORE_COLLECTION_HISTORY.RECENT,
   });
 
+  logger.debug({
+    pre: JSON.stringify(recentHistory?.data)?.length,
+    current: JSON.stringify(filteredUrData).length,
+    compare: JSON.stringify(recentHistory?.data) === JSON.stringify(filteredUrData),
+  });
+
   if (!recentHistory || (recentHistory && !objectEqual(recentHistory.data, filteredUrData))) {
     await setDocument<DocHistory>({
       collection: FIRESTORE_COLLECTION.MASTER,
