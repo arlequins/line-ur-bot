@@ -41,7 +41,7 @@ const processEvent = async (event: WebhookEvent) => {
     messages: [] as Message[],
   };
 
-  logger.debug({
+  logger.log({
     type: "processEvent",
     event,
   });
@@ -75,7 +75,7 @@ const processEvent = async (event: WebhookEvent) => {
         id: FIRESTORE_COLLECTION_HISTORY.RECENT,
       });
 
-      logger.debug({
+      logger.log({
         pre: JSON.stringify(recentHistory?.data)?.length,
         current: JSON.stringify(filteredUrData).length,
         compare:
@@ -102,21 +102,23 @@ const processEvent = async (event: WebhookEvent) => {
 
         // push message when in batch
         processResult.status = "以前と違いますので、記録が更新されました。";
-
-        result.messages = [
-          makeFirstMessage(filteredUrData),
-          makeTextMessage(makeSecondMessage(filteredUrData)),
-          makeTextMessage(makeThirdMessage(filteredUrData)),
-          makeTextMessage(makeFourthMessage(filteredUrData)),
-          makeTextMessage(processResult.status),
-        ];
-      } else {
-        result.messages = [
-          makeTextMessage(
-            "反応トリガーではありません。mURの空室確認をご希望の場合は、「確認」を入力してください。"
-          ),
-        ];
       }
+
+      result.messages = [
+        makeFirstMessage(filteredUrData),
+        makeTextMessage(makeSecondMessage(filteredUrData)),
+        makeTextMessage(makeThirdMessage(filteredUrData)),
+        makeTextMessage(makeFourthMessage(filteredUrData)),
+        makeTextMessage(processResult.status),
+      ];
+    }
+
+    if (!result.messages.length) {
+      result.messages = [
+        makeTextMessage(
+          "反応トリガーではありません。mURの空室確認をご希望の場合は、「確認」を入力してください。"
+        ),
+      ];
     }
 
     const replyToken = event.replyToken;
@@ -130,7 +132,7 @@ export const main = async (
   response: Response
 ): Promise<void> => {
   const body: WebhookRequestBody = request.body;
-  logger.debug({
+  logger.log({
     type: "main",
     body,
   });

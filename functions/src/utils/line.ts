@@ -3,6 +3,8 @@ import {TypeUrFilterRaw} from "../types";
 import {UR_BASE_URL} from "../constants/ur";
 import {currentDatetime} from "./date";
 
+const convertRentsToYen = (rents: number[]) => rents.map((rent) => `${rent.toLocaleString("ja-JP")}円`)
+
 export const makeTextMessage = (msg: string): TextMessage => ({
   type: "text",
   text: msg,
@@ -52,11 +54,11 @@ export const makeFirstMessage = (
                 },
                 {
                   type: "text",
-                  text: `${lowCostHouse.name}\n${lowCostHouse.skcs}\n部屋${lowCostHouse.roomCount}個\n${lowCostHouse.rents.map((rent) => rent.toLocaleString("ja-JP")).join(", ")}`,
+                  text: `${lowCostHouse.name}\n${lowCostHouse.skcs}\n部屋${lowCostHouse.roomCount}個\n${convertRentsToYen(lowCostHouse.rents).join("\n")}`,
                   wrap: true,
                   color: "#666666",
                   size: "sm",
-                  flex: 3,
+                  flex: 2,
                 },
               ],
             }],
@@ -74,10 +76,8 @@ export const makeSecondMessage = (
 
   for (const [index, house] of Object.entries(filteredUrData)) {
     const count = Number.parseInt(index) + 1;
-    if (count !== 1) {
-      str += "---------------------------\n";
-    }
-    str += `${count}番目\n${house.name}\n${house.skcs}\n部屋${house.roomCount}個|${house.rents}${count !== filteredUrData.length + 1 ? "\n" : ""}`;
+    str += "---------------------------\n";
+    str += `${count}番目\n${house.name} - ${house.skcs}\n部屋${house.roomCount}個\n${convertRentsToYen(house.rents).join('|')}${count !== filteredUrData.length ? "\n" : ""}`;
   }
 
   return str;
@@ -87,18 +87,17 @@ export const makeThirdMessage = (
   filteredUrData: TypeUrFilterRaw[],
 ): string => {
   let str = "部屋詳細情報\n";
+  str += "---------------------------\n";
 
   for (const [index, house] of Object.entries(filteredUrData)) {
     const count = Number.parseInt(index) + 1;
-    if (count !== 1) {
-      str += "---------------------------\n";
-    }
-    str += `${house.name}|${house.skcs}\n`;
+    str += "---------------------------\n";
+    str += `${count}番目 ${house.name} - ${house.skcs}\n`;
     const rooms = house.rooms.sort((a, b) => a.rents[0] - b.rents[0]);
 
     for (const [innerIndex, room] of Object.entries(rooms)) {
       const innerCount = Number.parseInt(innerIndex) + 1;
-      str += `${innerCount})${room.name}|${room.type}|${room.floor}|${room.rents.map((rent) => rent.toLocaleString("ja-JP")).join("~")}\n`;
+      str += `${innerCount}番目 ${room.name}, ${room.type}, ${room.floor} - ${room.rents.map((rent) => rent.toLocaleString("ja-JP")).join("~")}\n`;
     }
   }
 
