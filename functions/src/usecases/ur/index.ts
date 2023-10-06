@@ -228,10 +228,10 @@ export const filterUrData = ({master: urData}: TypeUrCrawlingData): TypeUrFilter
   return results;
 };
 
-export const processHistory = async (isOverride: boolean = false) => {
+export const processHistory = async (isOverride = false) => {
   const result = {
     messages: [] as Message[],
-    isSameStatus: false,
+    isNotSameStatus: false,
   };
 
   const urData = await pullUrData();
@@ -258,9 +258,9 @@ export const processHistory = async (isOverride: boolean = false) => {
     id: FIRESTORE_COLLECTION_HISTORY.RECENT,
   });
 
-  result.isSameStatus = !recentHistory || (recentHistory && !objectEqualLength(recentHistory.data, filteredUrData))
+  result.isNotSameStatus = !recentHistory || (recentHistory && !objectEqualLength(recentHistory.data, filteredUrData));
 
-  if (isOverride || result.isSameStatus) {
+  if (isOverride || result.isNotSameStatus) {
     await setDocument<DocHistory>({
       collection: FIRESTORE_COLLECTION.HISTORY,
       id: FIRESTORE_COLLECTION_HISTORY.RECENT,

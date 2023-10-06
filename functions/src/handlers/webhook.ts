@@ -1,9 +1,9 @@
-import { Request, Response } from "firebase-functions";
+import {Request, Response} from "firebase-functions";
 import * as logger from "firebase-functions/logger";
-import { Message, WebhookEvent, WebhookRequestBody } from "@line/bot-sdk";
+import {Message, WebhookEvent, WebhookRequestBody} from "@line/bot-sdk";
 import lineApi from "../services/line";
-import { makeTextMessage } from "../utils/line";
-import { processHistory } from "../usecases/ur";
+import {makeTextMessage} from "../utils/line";
+import {processHistory} from "../usecases/ur";
 
 const enum TRIGGER {
   UR_STATUS = "確認",
@@ -15,10 +15,10 @@ const targetTextList: string[] = [TRIGGER.UR_STATUS, TRIGGER.UR_FORCE_STATUS];
 const setProcessResultText = (
   messagesLength: number,
   isForceUpdate: boolean,
-  isSameStatus: boolean
+  isNotSameStatus: boolean
 ) => {
   if (isForceUpdate) {
-    if (!isSameStatus) {
+    if (isNotSameStatus) {
       return "更新：以前と違います。";
     } else {
       return "更新：前回と同じですが、更新されました。";
@@ -52,7 +52,7 @@ const processEvent = async (event: WebhookEvent) => {
       const processResultText = setProcessResultText(
         history.messages.length,
         isForceUpdate,
-        history.isSameStatus
+        history.isNotSameStatus
       );
 
       result.messages = [

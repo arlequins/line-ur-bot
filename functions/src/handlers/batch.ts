@@ -7,7 +7,7 @@ export const fetchUrData = async (): Promise<void> => {
   try {
     const history = await processHistory();
 
-    if (history.messages.length) {
+    if (!history.isNotSameStatus && history.messages.length) {
       await lineApi.pushMessage(VALUES.linePushUserId, history.messages);
     }
 
