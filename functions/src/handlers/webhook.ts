@@ -62,6 +62,7 @@ const processEvent = async (event: WebhookEvent) => {
     // push message when in batch
   }
 
+  // reply message
   const messages = [
     makeFirstMessage(filteredUrData),
     makeTextMessage(makeSecondMessage(filteredUrData)),
