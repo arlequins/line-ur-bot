@@ -3,7 +3,7 @@ import {TypeUrFilterRaw} from "../types";
 import {UR_BASE_URL} from "../constants/ur";
 import {currentDatetime} from "./date";
 
-const convertRentToYen = (rent: number) => `${rent.toLocaleString("ja-JP")}円`
+const convertRentToYen = (rent: number) => `${rent.toLocaleString("ja-JP")}円`;
 const convertRentsToYen = (rents: number[]) => rents.map((rent) => convertRentToYen(rent));
 
 export const makeTextMessage = (msg: string): TextMessage => ({
@@ -78,7 +78,7 @@ export const makeSecondMessage = (
   for (const [index, house] of Object.entries(filteredUrData)) {
     const count = Number.parseInt(index) + 1;
     str += "---------------------------\n";
-    str += `${count}番目\n${house.name} - ${house.skcs}\n部屋${house.roomCount}個\n${convertRentsToYen(house.rents).join("|")}${count !== filteredUrData.length ? "\n" : ""}`;
+    str += `${count}番目\n${house.name} - ${house.skcs}\n部屋${house.roomCount}個\n${convertRentsToYen(house.rents).join(", ")}${count !== filteredUrData.length ? "\n" : ""}`;
   }
 
   return str;
@@ -88,12 +88,10 @@ export const makeThirdMessage = (
   filteredUrData: TypeUrFilterRaw[],
 ): string => {
   let str = "部屋詳細情報\n";
-  str += "---------------------------\n";
 
-  for (const [index, house] of Object.entries(filteredUrData)) {
-    const count = Number.parseInt(index) + 1;
+  for (const house of filteredUrData) {
     str += "---------------------------\n";
-    str += `${count}番目 ${house.name} - ${house.skcs}\n`;
+    str += `${house.name} - ${house.skcs}\n`;
     const rooms = house.rooms.sort((a, b) => a.rents[0] - b.rents[0]);
 
     for (const [innerIndex, room] of Object.entries(rooms)) {
