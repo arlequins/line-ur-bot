@@ -6,13 +6,14 @@ import {VALUES} from "../constants";
 export const fetchUrData = async (): Promise<void> => {
   try {
     const history = await processHistory();
+    const messages = history.messages
 
-    if (!history.isNotSameStatus && history.messages.length) {
-      await lineApi.pushMessage(VALUES.linePushUserId, history.messages);
+    if (history.isNotSameStatus && messages.length) {
+      await lineApi.pushMessage(VALUES.linePushUserId, messages);
     }
 
     logger.info({
-      messageCount: history.messages.length,
+      messageCount: messages.length,
       status: "batch done",
     });
   } catch (error) {
