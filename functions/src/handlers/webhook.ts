@@ -47,7 +47,7 @@ const processEvent = async (event: WebhookEvent) => {
     collection: FIRESTORE_COLLECTION.HISTORY,
     id: FIRESTORE_COLLECTION_HISTORY.RECENT,
   });
-  const previousFilteredUrData = recentHistory.data;
+  const previousFilteredUrData = recentHistory?.data;
 
   if (!objectEqual(previousFilteredUrData, filteredUrData)) {
     await setDocument<DocHistory>({

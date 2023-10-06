@@ -19,7 +19,7 @@ export const getDocument = async<T>({
 }: {
   collection: string
   id: string
-}) => {
+}): Promise<T|undefined> => {
   const readSnapshot = await db.collection(collection).doc(id).get();
   const readData = readSnapshot.data() as T;
 
