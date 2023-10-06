@@ -1,14 +1,25 @@
 import {Request, Response} from "firebase-functions";
 import * as logger from "firebase-functions/logger";
-import {WebhookEvent, WebhookRequestBody} from "@line/bot-sdk";
+import {Message, WebhookEvent, WebhookRequestBody} from "@line/bot-sdk";
 import lineApi from "../services/line";
-import {makeFirstMessage, makeFourthMessage, makeSecondMessage, makeTextMessage, makeThirdMessage} from "../utils/line";
+import {
+  makeFirstMessage,
+  makeFourthMessage,
+  makeSecondMessage,
+  makeTextMessage,
+  makeThirdMessage,
+} from "../utils/line";
 import {filterUrData, pullUrData} from "../usecases/ur";
 import {setDocument, getDocument} from "../utils/db";
-import {DocHistory, DocMasterHouse, DocRecord, TypeUrRoomPrice} from "../types";
+import {
+  DocHistory,
+  DocMasterHouse,
+  DocRecord,
+  TypeUrRoomPrice,
+} from "../types";
 import {saveBatchCommit} from "../usecases/db";
 import {objectEqual} from "../utils";
-import { currentTimestamp } from "../utils/date";
+import {currentTimestamp} from "../utils/date";
 
 const enum FIRESTORE_COLLECTION {
   MASTER = "master",
@@ -21,71 +32,96 @@ const enum FIRESTORE_COLLECTION_MASTER {
 const enum FIRESTORE_COLLECTION_HISTORY {
   RECENT = "recent",
 }
+const enum TRIGGER {
+  UR_STATUS = "確認",
+}
 
 const processEvent = async (event: WebhookEvent) => {
+  const result = {
+    messages: [] as Message[],
+  };
+
   logger.debug({
     type: "processEvent",
     event,
   });
 
-  const urData = await pullUrData();
-
-  // update master collection
-  await setDocument<DocMasterHouse>({
-    collection: FIRESTORE_COLLECTION.MASTER,
-    id: FIRESTORE_COLLECTION_MASTER.RECENT,
-    data: urData.master,
-  });
-
-  // update records collection
-  await saveBatchCommit<TypeUrRoomPrice, DocRecord>(FIRESTORE_COLLECTION.RECORDS, urData.records);
-
-  // push messages
-  const filteredUrData = filterUrData(urData);
-
-  // compare previous push
-  const recentHistory = await getDocument<DocHistory>({
-    collection: FIRESTORE_COLLECTION.HISTORY,
-    id: FIRESTORE_COLLECTION_HISTORY.RECENT,
-  });
-
-  logger.debug({
-    pre: JSON.stringify(recentHistory?.data)?.length,
-    current: JSON.stringify(filteredUrData).length,
-    compare: JSON.stringify(recentHistory?.data) === JSON.stringify(filteredUrData),
-  });
-
-  const result = {
-    status: '前回と同じです。',
-  }
-
-  if (!recentHistory || (recentHistory && !objectEqual(recentHistory.data, filteredUrData))) {
-    await setDocument<DocHistory>({
-      collection: FIRESTORE_COLLECTION.HISTORY,
-      id: FIRESTORE_COLLECTION_HISTORY.RECENT,
-      data: {
-        data: filteredUrData,
-        timestamp: currentTimestamp(),
-      },
-    });
-
-    // push message when in batch
-    result.status = `以前と違いますので、記録が更新されました。`
-  }
-
-  // reply message
-  const messages = [
-    makeFirstMessage(filteredUrData),
-    makeTextMessage(makeSecondMessage(filteredUrData)),
-    makeTextMessage(makeThirdMessage(filteredUrData)),
-    makeTextMessage(makeFourthMessage(filteredUrData)),
-    makeTextMessage(result.status),
-  ];
-
   if (event.type === "message") {
+    if (
+      event.message.type === "text" &&
+      event.message.text === TRIGGER.UR_STATUS
+    ) {
+      const urData = await pullUrData();
+
+      // update master collection
+      await setDocument<DocMasterHouse>({
+        collection: FIRESTORE_COLLECTION.MASTER,
+        id: FIRESTORE_COLLECTION_MASTER.RECENT,
+        data: urData.master,
+      });
+
+      // update records collection
+      await saveBatchCommit<TypeUrRoomPrice, DocRecord>(
+        FIRESTORE_COLLECTION.RECORDS,
+        urData.records
+      );
+
+      // push messages
+      const filteredUrData = filterUrData(urData);
+
+      // compare previous push
+      const recentHistory = await getDocument<DocHistory>({
+        collection: FIRESTORE_COLLECTION.HISTORY,
+        id: FIRESTORE_COLLECTION_HISTORY.RECENT,
+      });
+
+      logger.debug({
+        pre: JSON.stringify(recentHistory?.data)?.length,
+        current: JSON.stringify(filteredUrData).length,
+        compare:
+          JSON.stringify(recentHistory?.data) ===
+          JSON.stringify(filteredUrData),
+      });
+
+      const processResult = {
+        status: "前回と同じです。",
+      };
+
+      if (
+        !recentHistory ||
+        (recentHistory && !objectEqual(recentHistory.data, filteredUrData))
+      ) {
+        await setDocument<DocHistory>({
+          collection: FIRESTORE_COLLECTION.HISTORY,
+          id: FIRESTORE_COLLECTION_HISTORY.RECENT,
+          data: {
+            data: filteredUrData,
+            timestamp: currentTimestamp(),
+          },
+        });
+
+        // push message when in batch
+        processResult.status = "以前と違いますので、記録が更新されました。";
+
+        result.messages = [
+          makeFirstMessage(filteredUrData),
+          makeTextMessage(makeSecondMessage(filteredUrData)),
+          makeTextMessage(makeThirdMessage(filteredUrData)),
+          makeTextMessage(makeFourthMessage(filteredUrData)),
+          makeTextMessage(processResult.status),
+        ];
+      } else {
+        result.messages = [
+          makeTextMessage(
+            "反応トリガーではありません。mURの空室確認をご希望の場合は、「確認」を入力してください。"
+          ),
+        ];
+      }
+    }
+
     const replyToken = event.replyToken;
 
-    await lineApi.replyMessage(replyToken, messages);
+    await lineApi.replyMessage(replyToken, result.messages);
   }
 };
 

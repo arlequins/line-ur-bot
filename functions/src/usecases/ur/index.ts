@@ -2,7 +2,7 @@ import {OPTIONS} from "../../constants";
 import {urAreaPrefs, targetHouseIds} from "../../constants/ur";
 import {fetchAreaList, fetchRoomList} from "../../services/ur-api";
 import {ResponseUrHouse, TypeUrRoom, TypeUrRoomPrice, ResponseUrRoom, DocRecord, DocMasterHouse, TypeUrCrawlingData, TypeUrFilterRaw, TypeUrFilterRawRoom} from "../../types";
-import { currentTimestamp } from "../../utils/date";
+import {currentTimestamp} from "../../utils/date";
 
 const defaultParseError = (num:number) => Number.isInteger(num) ? num : -1;
 const deleteYen = (str: string) => str.replace("円", "").replaceAll(",", "");

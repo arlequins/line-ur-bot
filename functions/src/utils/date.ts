@@ -1,10 +1,11 @@
 import * as dayjs from "dayjs";
-import * as timezone from'dayjs/plugin/timezone'
+import * as timezone from "dayjs/plugin/timezone";
 
-dayjs.extend(timezone)
+const tz = "Asia/Tokyo";
 
-const tz = 'Asia/Tokyo'
+dayjs.extend(timezone);
+dayjs.tz.setDefault(tz);
 
 export const currentTimestampNumber = () => new Date().valueOf();
-export const currentTimestamp = () => dayjs().tz(tz).format()
-export const currentDatetime = () => dayjs().tz(tz).format("YYYY/MM/DD HH:mm")
+export const currentTimestamp = () => dayjs().format();
+export const currentDatetime = () => dayjs().format("YYYY/MM/DD HH:mm");

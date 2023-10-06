@@ -1,7 +1,7 @@
 import {FlexMessage, TextMessage} from "@line/bot-sdk";
 import {TypeUrFilterRaw} from "../types";
 import {UR_BASE_URL} from "../constants/ur";
-import { currentDatetime } from "./date";
+import {currentDatetime} from "./date";
 
 export const makeTextMessage = (msg: string): TextMessage => ({
   type: "text",
@@ -52,7 +52,7 @@ export const makeFirstMessage = (
                 },
                 {
                   type: "text",
-                  text: `${lowCostHouse.name}\n${lowCostHouse.skcs}\n部屋${lowCostHouse.roomCount}個\n${lowCostHouse.rents.map((rent) => rent.toLocaleString("ja-JP")).join(', ')}`,
+                  text: `${lowCostHouse.name}\n${lowCostHouse.skcs}\n部屋${lowCostHouse.roomCount}個\n${lowCostHouse.rents.map((rent) => rent.toLocaleString("ja-JP")).join(", ")}`,
                   wrap: true,
                   color: "#666666",
                   size: "sm",
@@ -77,7 +77,7 @@ export const makeSecondMessage = (
     if (count !== 1) {
       str += "---------------------------\n";
     }
-    str += `${count}番目\n${house.name}\n${house.skcs}\n部屋${house.roomCount}個|${house.rents}${count !== filteredUrData.length + 1 ? '\n' : ''}`;
+    str += `${count}番目\n${house.name}\n${house.skcs}\n部屋${house.roomCount}個|${house.rents}${count !== filteredUrData.length + 1 ? "\n" : ""}`;
   }
 
   return str;
