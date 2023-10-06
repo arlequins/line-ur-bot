@@ -70,7 +70,7 @@ export type TypeUrRoomIndex = {
 }
 
 export type TypeUrRoom = {
-  id: TypeUrHouseId // "40_3410"
+  houseId: TypeUrHouseId // "40_3410"
   roomId: TypeUrRoomId // "000030306"
   name: string // "3号棟306号室"
   type: string // "1LDK"
@@ -81,7 +81,7 @@ export type TypeUrRoom = {
 }
 
 export type TypeUrRoomPrice = {
-  id: TypeUrHouseId // "40_3410"
+  houseId: TypeUrHouseId // "40_3410"
   roomId: TypeUrRoomId // "000030306"
   timestamp: number
   rents: number[] // "102,400円"
@@ -89,7 +89,7 @@ export type TypeUrRoomPrice = {
 }
 
 export type TypeUrHouse = {
-  id: TypeUrHouseId // "40_3410"
+  houseId: TypeUrHouseId // "40_3410"
   pref: string // '14'
   area: string // '01'
   name: string // "シティコート元住吉"
@@ -100,7 +100,7 @@ export type TypeUrHouse = {
 }
 
 export type TypeUrHousePrice = {
-  id: TypeUrHouseId // "40_3410"
+  houseId: TypeUrHouseId // "40_3410"
   timestamp: number
   roomCount: number // 3
   rents: number[] // 0 === "146,900円～158,300円", 0 > 162,900円
@@ -122,4 +122,27 @@ export type DocRecord = {
 export type TypeUrCrawlingData = {
   master: DocMasterHouse
   records: DocRecord[]
+}
+
+export type TypeUrFilterRawRoom = {
+  roomId: TypeUrRoomId // "000030306"
+  name: string // "3号棟306号室"
+  type: string // "1LDK"
+  floorspace: string // "49&#13217;"
+  floor: string // "3階"
+  urlDetail: string // "/chintai/kanto/tokyo/20_4481_room.html?JKSS=000030306"
+  madori: string
+  rents: number[] // "102,400円"
+}
+
+export type TypeUrFilterRaw = TypeUrHouse & {
+  roomCount: number // 3
+  rents: number[] // 0 === "146,900円～158,300円", 0 > 162,900円
+
+  rooms: TypeUrFilterRawRoom[]
+}
+
+export type DocHistory = {
+  data: TypeUrFilterRaw[],
+  timestamp: number,
 }

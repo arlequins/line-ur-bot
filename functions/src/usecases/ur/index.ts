@@ -1,7 +1,7 @@
 import {OPTIONS} from "../../constants";
 import {urAreaPrefs, targetHouseIds} from "../../constants/ur";
 import {fetchAreaList, fetchRoomList} from "../../services/ur-api";
-import {ResponseUrHouse, TypeUrRoom, TypeUrRoomPrice, ResponseUrRoom, DocRecord, DocMasterHouse, TypeUrCrawlingData} from "../../types";
+import {ResponseUrHouse, TypeUrRoom, TypeUrRoomPrice, ResponseUrRoom, DocRecord, DocMasterHouse, TypeUrCrawlingData, TypeUrFilterRaw, TypeUrFilterRawRoom} from "../../types";
 
 const defaultParseError = (num:number) => Number.isInteger(num) ? num : -1;
 const deleteYen = (str: string) => str.replace("円", "").replaceAll(",", "");
@@ -46,7 +46,7 @@ const convertUrArea = async ({
     const rangefee = roomCount === 0 ? rent : [];
 
     const house = {
-      id: obj.id,
+      houseId: obj.id,
       pref: tdfk,
       area: area,
       name: obj.name,
@@ -56,7 +56,7 @@ const convertUrArea = async ({
       url: obj.roomUrl, // "/chintai/kanto/kanagawa/40_3410.html"
     };
 
-    const houseId = house.id;
+    const houseId = house.houseId;
     const rooms = [] as TypeUrRoom[];
     const roomPrices = [] as TypeUrRoomPrice[];
 
@@ -75,7 +75,7 @@ const convertUrArea = async ({
       if (roomList) {
         for (const roomInfo of roomList) {
           const room = {
-            id: houseId,
+            houseId,
             roomId: roomInfo.id,
             name: roomInfo.name,
             type: roomInfo.type,
@@ -88,8 +88,8 @@ const convertUrArea = async ({
           rooms.push(room);
 
           roomPrices.push({
-            id: houseId,
-            roomId: room.id,
+            houseId,
+            roomId: room.roomId,
             timestamp,
             rents: convertRent(roomInfo.rent),
             commonfee: convertCommonfee(roomInfo.commonfee),
@@ -99,12 +99,12 @@ const convertUrArea = async ({
     }
 
     const housePrice = {
-      id: houseId,
+      houseId,
       timestamp,
       roomCount,
       rents: rent, // 0 === "146,900円～158,300円", 0 > 162,900円
       rooms: roomPrices.map((room) => ({
-        roomId: room.id,
+        roomId: room.roomId,
         rents: room.rents,
       })),
     };
@@ -158,7 +158,7 @@ export const pullUrData = async (): Promise<TypeUrCrawlingData> => {
       resultArea.roomPrices.forEach((obj) => {
         result.master.roomPrices.push(obj);
         result.records.push({
-          docId: `${obj.id}_${obj.roomId}`,
+          docId: `${obj.houseId}_${obj.roomId}`,
           data: obj,
         });
       });
@@ -166,4 +166,50 @@ export const pullUrData = async (): Promise<TypeUrCrawlingData> => {
   }
 
   return result;
+};
+
+export const filterUrData = ({master: urData}: TypeUrCrawlingData): TypeUrFilterRaw[] => {
+  const results = [];
+
+  for (const house of urData.houses) {
+    const targetHousePrice = urData.housePrices.find((housePrice) => housePrice.houseId === house.houseId);
+    if (!targetHousePrice) {
+      continue;
+    }
+    const roomCount = targetHousePrice.roomCount;
+    if (roomCount === 0) {
+      continue;
+    }
+
+    const filterRooms = [] as TypeUrFilterRawRoom[];
+
+    for (const targetRoomPrice of targetHousePrice.rooms) {
+      const roomId = targetRoomPrice.roomId;
+      const rents = targetRoomPrice.rents;
+      const room = urData.rooms.find((obj) => obj.roomId === roomId);
+      if (!room) {
+        continue;
+      }
+
+      filterRooms.push({
+        roomId,
+        name: room.name,
+        type: room.type,
+        floorspace: room.floorspace,
+        floor: room.floor,
+        urlDetail: room.urlDetail,
+        madori: room.madori,
+        rents,
+      });
+    }
+
+    results.push({
+      ...house,
+      roomCount,
+      rents: targetHousePrice.rents,
+      rooms: filterRooms,
+    });
+  }
+
+  return results;
 };

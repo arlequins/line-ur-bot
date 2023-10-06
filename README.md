@@ -9,3 +9,7 @@ npx firebase-tools init
 ```
 npx firebase-tools deploy
 ```
+
+## TODO LIST
+- [ ] save madori image
+- [ ] bigquery table

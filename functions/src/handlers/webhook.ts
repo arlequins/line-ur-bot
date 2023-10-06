@@ -2,11 +2,12 @@ import {Request, Response} from "firebase-functions";
 import * as logger from "firebase-functions/logger";
 import {WebhookEvent, WebhookRequestBody} from "@line/bot-sdk";
 import lineApi from "../services/line";
-import {makeTextMessage} from "../utils/line";
-import {pullUrData} from "../usecases/ur";
-import {setDocument} from "../utils/db";
-import {DocMasterHouse, DocRecord, TypeUrRoomPrice} from "../types";
+import {makeFirstMessage, makeSecondMessage, makeTextMessage} from "../utils/line";
+import {filterUrData, pullUrData} from "../usecases/ur";
+import {setDocument, getDocument} from "../utils/db";
+import {DocHistory, DocMasterHouse, DocRecord, TypeUrRoomPrice} from "../types";
 import {saveBatchCommit} from "../usecases/db";
+import {currentTimestamp, objectEqual} from "../utils";
 
 const enum FIRESTORE_COLLECTION {
   MASTER = "master",
@@ -14,6 +15,9 @@ const enum FIRESTORE_COLLECTION {
   HISTORY = "history",
 }
 const enum FIRESTORE_COLLECTION_MASTER {
+  RECENT = "recent",
+}
+const enum FIRESTORE_COLLECTION_HISTORY {
   RECENT = "recent",
 }
 
@@ -26,25 +30,47 @@ const processEvent = async (event: WebhookEvent) => {
   const urData = await pullUrData();
 
   // update master collection
-  const masterData = await setDocument<DocMasterHouse>({
+  await setDocument<DocMasterHouse>({
     collection: FIRESTORE_COLLECTION.MASTER,
     id: FIRESTORE_COLLECTION_MASTER.RECENT,
     data: urData.master,
   });
 
   // update records collection
-  const recordData = await saveBatchCommit<TypeUrRoomPrice, DocRecord>(FIRESTORE_COLLECTION.RECORDS, urData.records);
+  await saveBatchCommit<TypeUrRoomPrice, DocRecord>(FIRESTORE_COLLECTION.RECORDS, urData.records);
 
-  logger.debug({
-    masterData,
-    recordData,
+  // push messages
+  const filteredUrData = filterUrData(urData);
+
+  // compare previous push
+  const recentHistory = await getDocument<DocHistory>({
+    collection: FIRESTORE_COLLECTION.HISTORY,
+    id: FIRESTORE_COLLECTION_HISTORY.RECENT,
   });
+  const previousFilteredUrData = recentHistory.data;
+
+  if (!objectEqual(previousFilteredUrData, filteredUrData)) {
+    await setDocument<DocHistory>({
+      collection: FIRESTORE_COLLECTION.MASTER,
+      id: FIRESTORE_COLLECTION_HISTORY.RECENT,
+      data: {
+        data: filteredUrData,
+        timestamp: currentTimestamp(),
+      },
+    });
+
+    // push message when in batch
+  }
+
+  const messages = [
+    makeFirstMessage(filteredUrData),
+    makeTextMessage(makeSecondMessage(filteredUrData)),
+  ];
+
   if (event.type === "message") {
     const replyToken = event.replyToken;
 
-    await lineApi.replyMessage(replyToken, [
-      makeTextMessage("PROCESSING"),
-    ]);
+    await lineApi.replyMessage(replyToken, messages);
   }
 };
 
