@@ -2,7 +2,7 @@ import {Request, Response} from "firebase-functions";
 import * as logger from "firebase-functions/logger";
 import {WebhookEvent, WebhookRequestBody} from "@line/bot-sdk";
 import lineApi from "../services/line";
-import {makeFirstMessage, makeSecondMessage, makeTextMessage} from "../utils/line";
+import {makeFirstMessage, makeSecondMessage, makeTextMessage, makeThirdMessage} from "../utils/line";
 import {filterUrData, pullUrData} from "../usecases/ur";
 import {setDocument, getDocument} from "../utils/db";
 import {DocHistory, DocMasterHouse, DocRecord, TypeUrRoomPrice} from "../types";
@@ -47,9 +47,8 @@ const processEvent = async (event: WebhookEvent) => {
     collection: FIRESTORE_COLLECTION.HISTORY,
     id: FIRESTORE_COLLECTION_HISTORY.RECENT,
   });
-  const previousFilteredUrData = recentHistory?.data;
 
-  if (!objectEqual(previousFilteredUrData, filteredUrData)) {
+  if (!recentHistory || (recentHistory && !objectEqual(recentHistory.data, filteredUrData))) {
     await setDocument<DocHistory>({
       collection: FIRESTORE_COLLECTION.MASTER,
       id: FIRESTORE_COLLECTION_HISTORY.RECENT,
@@ -66,6 +65,7 @@ const processEvent = async (event: WebhookEvent) => {
   const messages = [
     makeFirstMessage(filteredUrData),
     makeTextMessage(makeSecondMessage(filteredUrData)),
+    makeTextMessage(makeThirdMessage(filteredUrData)),
   ];
 
   if (event.type === "message") {

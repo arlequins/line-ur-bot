@@ -203,6 +203,10 @@ export const filterUrData = ({master: urData}: TypeUrCrawlingData): TypeUrFilter
       });
     }
 
+    if (!filterRooms.length) {
+      continue
+    }
+
     results.push({
       ...house,
       roomCount,
