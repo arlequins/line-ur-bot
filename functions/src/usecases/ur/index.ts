@@ -1,4 +1,3 @@
-import {logger} from "firebase-functions/v1";
 import {OPTIONS} from "../../constants";
 import {FIRESTORE_COLLECTION, FIRESTORE_COLLECTION_HISTORY, FIRESTORE_COLLECTION_MASTER} from "../../constants/db";
 import {urAreaPrefs, targetHouseIds} from "../../constants/ur";
@@ -229,9 +228,10 @@ export const filterUrData = ({master: urData}: TypeUrCrawlingData): TypeUrFilter
   return results;
 };
 
-export const processHistory = async () => {
+export const processHistory = async (isOverride: boolean = false) => {
   const result = {
     messages: [] as Message[],
+    isSameStatus: false,
   };
 
   const urData = await pullUrData();
@@ -258,17 +258,9 @@ export const processHistory = async () => {
     id: FIRESTORE_COLLECTION_HISTORY.RECENT,
   });
 
-  logger.log({
-    pre: JSON.stringify(recentHistory?.data)?.length,
-    current: JSON.stringify(filteredUrData).length,
-    compare:
-      JSON.stringify(recentHistory?.data) === JSON.stringify(filteredUrData),
-  });
+  result.isSameStatus = !recentHistory || (recentHistory && !objectEqualLength(recentHistory.data, filteredUrData))
 
-  if (
-    !recentHistory ||
-    (recentHistory && !objectEqualLength(recentHistory.data, filteredUrData))
-  ) {
+  if (isOverride || result.isSameStatus) {
     await setDocument<DocHistory>({
       collection: FIRESTORE_COLLECTION.HISTORY,
       id: FIRESTORE_COLLECTION_HISTORY.RECENT,

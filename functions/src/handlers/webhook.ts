@@ -1,15 +1,36 @@
-import {Request, Response} from "firebase-functions";
+import { Request, Response } from "firebase-functions";
 import * as logger from "firebase-functions/logger";
-import {Message, WebhookEvent, WebhookRequestBody} from "@line/bot-sdk";
+import { Message, WebhookEvent, WebhookRequestBody } from "@line/bot-sdk";
 import lineApi from "../services/line";
-import {
-  makeTextMessage,
-} from "../utils/line";
-import {processHistory} from "../usecases/ur";
+import { makeTextMessage } from "../utils/line";
+import { processHistory } from "../usecases/ur";
 
 const enum TRIGGER {
   UR_STATUS = "確認",
+  UR_FORCE_STATUS = "更新",
 }
+
+const targetTextList: string[] = [TRIGGER.UR_STATUS, TRIGGER.UR_FORCE_STATUS];
+
+const setProcessResultText = (
+  messagesLength: number,
+  isForceUpdate: boolean,
+  isSameStatus: boolean
+) => {
+  if (isForceUpdate) {
+    if (!isSameStatus) {
+      return "更新：以前と違います。";
+    } else {
+      return "更新：前回と同じですが、更新されました。";
+    }
+  } else {
+    if (messagesLength) {
+      return "確認：以前と違いますので、記録が更新されました。";
+    } else {
+      return "確認：前回と同じです。";
+    }
+  }
+};
 
 const processEvent = async (event: WebhookEvent) => {
   const result = {
@@ -24,10 +45,15 @@ const processEvent = async (event: WebhookEvent) => {
   if (event.type === "message") {
     if (
       event.message.type === "text" &&
-      event.message.text === TRIGGER.UR_STATUS
+      targetTextList.includes(event.message.text)
     ) {
-      const history = await processHistory();
-      const processResultText = history.messages.length ? "以前と違いますので、記録が更新されました。" : "前回と同じです。";
+      const isForceUpdate = event.message.text === TRIGGER.UR_FORCE_STATUS;
+      const history = await processHistory(isForceUpdate);
+      const processResultText = setProcessResultText(
+        history.messages.length,
+        isForceUpdate,
+        history.isSameStatus
+      );
 
       result.messages = [
         ...history.messages,
@@ -38,7 +64,7 @@ const processEvent = async (event: WebhookEvent) => {
     if (!result.messages.length) {
       result.messages = [
         makeTextMessage(
-          "反応トリガーではありません。URの空室確認をご希望の場合は、「確認」を入力してください。"
+          "トリガーではありません。\nUR空室確認は、\n「確認」を入力してください。"
         ),
       ];
     }
