@@ -26,5 +26,3 @@ export const webhookValidation = (
 export const objectEqual = <T, X> (obj1: T, obj2: X) => {
   return JSON.stringify(obj1) === JSON.stringify(obj2);
 };
-
-export const currentTimestamp = () => new Date().valueOf();

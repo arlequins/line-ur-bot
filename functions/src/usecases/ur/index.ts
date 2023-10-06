@@ -2,6 +2,7 @@ import {OPTIONS} from "../../constants";
 import {urAreaPrefs, targetHouseIds} from "../../constants/ur";
 import {fetchAreaList, fetchRoomList} from "../../services/ur-api";
 import {ResponseUrHouse, TypeUrRoom, TypeUrRoomPrice, ResponseUrRoom, DocRecord, DocMasterHouse, TypeUrCrawlingData, TypeUrFilterRaw, TypeUrFilterRawRoom} from "../../types";
+import { currentTimestamp } from "../../utils/date";
 
 const defaultParseError = (num:number) => Number.isInteger(num) ? num : -1;
 const deleteYen = (str: string) => str.replace("円", "").replaceAll(",", "");
@@ -38,7 +39,7 @@ const convertUrArea = async ({
     return result;
   }
 
-  const timestamp = new Date().valueOf();
+  const timestamp = currentTimestamp();
 
   for (const obj of list) {
     const roomCount = obj.roomCount;
@@ -53,7 +54,7 @@ const convertUrArea = async ({
       skcs: obj.skcs,
       rangefee,
       commonfee: convertCommonfee(obj.commonfee), // "（2,300円）"
-      url: obj.roomUrl, // "/chintai/kanto/kanagawa/40_3410.html"
+      url: obj.bukkenUrl, // "/chintai/kanto/kanagawa/40_3410.html"
     };
 
     const houseId = house.houseId;
@@ -98,7 +99,7 @@ const convertUrArea = async ({
       }
     }
 
-    const roomRentList = roomPrices.map((room) => room.rents[0])
+    const roomRentList = roomPrices.map((room) => room.rents[0]);
     const housePrice = {
       houseId,
       timestamp,

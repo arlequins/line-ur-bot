@@ -83,7 +83,7 @@ export type TypeUrRoom = {
 export type TypeUrRoomPrice = {
   houseId: TypeUrHouseId // "40_3410"
   roomId: TypeUrRoomId // "000030306"
-  timestamp: number
+  timestamp: string
   rents: number[] // "102,400円"
   commonfee: number
 }
@@ -101,7 +101,7 @@ export type TypeUrHouse = {
 
 export type TypeUrHousePrice = {
   houseId: TypeUrHouseId // "40_3410"
-  timestamp: number
+  timestamp: string
   roomCount: number // 3
   lowRent: number
   rents: number[] // 0 === "146,900円～158,300円", 0 > 162,900円
@@ -146,5 +146,5 @@ export type TypeUrFilterRaw = TypeUrHouse & {
 
 export type DocHistory = {
   data: TypeUrFilterRaw[],
-  timestamp: number,
+  timestamp: string,
 }

@@ -1,6 +1,6 @@
 import {TypeUrHouseId} from "../types";
 
-export const UR_BASE_URL = 'https://www.ur-net.go.jp'
+export const UR_BASE_URL = "https://www.ur-net.go.jp";
 
 export const urAreaPrefs = [
   {

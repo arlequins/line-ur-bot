@@ -7,7 +7,8 @@ import {filterUrData, pullUrData} from "../usecases/ur";
 import {setDocument, getDocument} from "../utils/db";
 import {DocHistory, DocMasterHouse, DocRecord, TypeUrRoomPrice} from "../types";
 import {saveBatchCommit} from "../usecases/db";
-import {currentTimestamp, objectEqual} from "../utils";
+import {objectEqual} from "../utils";
+import { currentTimestamp } from "../utils/date";
 
 const enum FIRESTORE_COLLECTION {
   MASTER = "master",
@@ -54,6 +55,10 @@ const processEvent = async (event: WebhookEvent) => {
     compare: JSON.stringify(recentHistory?.data) === JSON.stringify(filteredUrData),
   });
 
+  const result = {
+    status: '前回と同じです。',
+  }
+
   if (!recentHistory || (recentHistory && !objectEqual(recentHistory.data, filteredUrData))) {
     await setDocument<DocHistory>({
       collection: FIRESTORE_COLLECTION.HISTORY,
@@ -65,6 +70,7 @@ const processEvent = async (event: WebhookEvent) => {
     });
 
     // push message when in batch
+    result.status = `以前と違いますので、記録が更新されました。`
   }
 
   // reply message
@@ -73,6 +79,7 @@ const processEvent = async (event: WebhookEvent) => {
     makeTextMessage(makeSecondMessage(filteredUrData)),
     makeTextMessage(makeThirdMessage(filteredUrData)),
     makeTextMessage(makeFourthMessage(filteredUrData)),
+    makeTextMessage(result.status),
   ];
 
   if (event.type === "message") {
