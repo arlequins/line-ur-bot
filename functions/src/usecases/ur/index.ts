@@ -98,11 +98,13 @@ const convertUrArea = async ({
       }
     }
 
+    const roomRentList = roomPrices.map((room) => room.rents[0])
     const housePrice = {
       houseId,
       timestamp,
       roomCount,
-      rents: rent, // 0 === "146,900円～158,300円", 0 > 162,900円
+      lowRent: roomRentList.length ? roomRentList.sort((a, b) => a - b)[0] : -1,
+      rents: roomRentList, // 0 === "146,900円～158,300円", 0 > 162,900円
       rooms: roomPrices.map((room) => ({
         roomId: room.roomId,
         rents: room.rents,
@@ -210,6 +212,7 @@ export const filterUrData = ({master: urData}: TypeUrCrawlingData): TypeUrFilter
     results.push({
       ...house,
       roomCount,
+      lowRent: targetHousePrice.lowRent,
       rents: targetHousePrice.rents,
       rooms: filterRooms,
     });

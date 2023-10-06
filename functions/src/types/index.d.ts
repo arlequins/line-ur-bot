@@ -103,6 +103,7 @@ export type TypeUrHousePrice = {
   houseId: TypeUrHouseId // "40_3410"
   timestamp: number
   roomCount: number // 3
+  lowRent: number
   rents: number[] // 0 === "146,900円～158,300円", 0 > 162,900円
   rooms: TypeUrRoomIndex[]
 }
@@ -138,6 +139,7 @@ export type TypeUrFilterRawRoom = {
 export type TypeUrFilterRaw = TypeUrHouse & {
   roomCount: number // 3
   rents: number[] // 0 === "146,900円～158,300円", 0 > 162,900円
+  lowRent: number
 
   rooms: TypeUrFilterRawRoom[]
 }
