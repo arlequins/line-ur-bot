@@ -1,10 +1,21 @@
-import { Request, Response } from "firebase-functions";
+import {Request, Response} from "firebase-functions";
 import * as logger from "firebase-functions/logger";
-import { WebhookEvent, WebhookRequestBody } from "@line/bot-sdk";
+import {WebhookEvent, WebhookRequestBody} from "@line/bot-sdk";
 import lineApi from "../services/line";
-import { makeTextMessage } from "../utils/line";
-import { pullUrData } from "../usecases/ur";
-import { saveUrHistory } from "../usecases/db";
+import {makeTextMessage} from "../utils/line";
+import {pullUrData} from "../usecases/ur";
+import { setDocument } from "../utils/db";
+import { DocMasterHouse, DocRecord, TypeUrRoomPrice } from "../types";
+import { saveBatchCommit } from "../usecases/db";
+
+const enum FIRESTORE_COLLECTION {
+  MASTER = 'master',
+  RECORDS = 'records',
+  HISTORY = 'history',
+}
+const enum FIRESTORE_COLLECTION_MASTER {
+  RECENT = 'recent',
+}
 
 const processEvent = async (event: WebhookEvent) => {
   logger.debug({
@@ -12,21 +23,27 @@ const processEvent = async (event: WebhookEvent) => {
     event,
   });
 
-  // fetch database
-  const history = await pullUrData();
+  const urData = await pullUrData();
 
-  // save history
-  await saveUrHistory({
-    collection: 'test',
-    id: 'id',
-    data: history,
+  // update master collection
+  const masterData = await setDocument<DocMasterHouse>({
+    collection: FIRESTORE_COLLECTION.MASTER,
+    id: FIRESTORE_COLLECTION_MASTER.RECENT,
+    data: urData.master,
   });
 
+  // update records collection
+  const recordData = await saveBatchCommit<TypeUrRoomPrice, DocRecord>(FIRESTORE_COLLECTION.RECORDS, urData.records);
+
+  logger.debug({
+    masterData,
+    recordData,
+  })
   if (event.type === "message") {
     const replyToken = event.replyToken;
 
     await lineApi.replyMessage(replyToken, [
-      makeTextMessage("TESTメッセージです。"),
+      makeTextMessage("PROCESSING"),
     ]);
   }
 };
@@ -57,6 +74,6 @@ export const main = async (
   }
 
   response.send({
-    status: "ok",
+    status: "stand-by",
   });
 };

@@ -1,4 +1,4 @@
-import { db } from "../services/db";
+import {db} from "../services/db";
 
 export const setDocument = async<T extends FirebaseFirestore.WithFieldValue<FirebaseFirestore.DocumentData>>({
   collection,
@@ -10,7 +10,8 @@ export const setDocument = async<T extends FirebaseFirestore.WithFieldValue<Fire
   data: T
 }) => {
   await db.collection(collection).doc(id).set(data);
-}
+  return data
+};
 
 export const getDocument = async<T>({
   collection,
@@ -22,5 +23,5 @@ export const getDocument = async<T>({
   const readSnapshot = await db.collection(collection).doc(id).get();
   const readData = readSnapshot.data() as T;
 
-  return readData
-}
+  return readData;
+};

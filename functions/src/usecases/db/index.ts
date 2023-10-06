@@ -1,43 +1,43 @@
 import { logger } from "firebase-functions/v1";
-import { UrHistory } from "../../types";
-import { getDocument, setDocument } from "../../utils/db";
+import { db } from "../../services/db";
 
-export const saveUrHistory = async({
-  collection,
-  id,
-  data,
-}: {
+// Each batch of writes can write to a maximum of 500 documents.
+const limit = 500
+
+export const saveBatchCommit = async<A extends FirebaseFirestore.WithFieldValue<FirebaseFirestore.DocumentData>, T extends {
+  docId: string
+  data: A
+}> (
   collection: string,
-  id: string,
-  data: UrHistory,
-}) => {
-  const target = {
-    collection,
-    id,
+  list: T[],
+): Promise<T[]> => {
+  let total = 0;
+
+  if (list.length === 0) {
+    return [];
   }
 
-  await setDocument<UrHistory>({
-    ...target,
-    data,
-  });
-}
+  try {
+    let batch = db.batch();
 
-export const fetchUrHistory = async({
-  collection,
-  id,
-}: {
-  collection: string,
-  id: string,
-}):Promise<UrHistory> => {
-  const target = {
-    collection,
-    id,
+    for (const info of list) {
+      total++;
+
+      const id = info.docId;
+
+      const docRef = db.collection(collection).doc(id);
+      batch.set(docRef, info.data);
+
+      if (total % limit === 0) {
+        await batch.commit();
+        batch = db.batch();
+      }
+    }
+    await batch.commit();
+
+    return list;
+  } catch (error) {
+    logger.error(error);
+    return [];
   }
-
-  const info = await getDocument<UrHistory>(target);
-  logger.debug({
-    info
-  })
-
-  return info
-}
+};
