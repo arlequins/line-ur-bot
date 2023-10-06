@@ -7,5 +7,5 @@ dayjs.extend(timezone);
 dayjs.tz.setDefault(tz);
 
 export const currentTimestampNumber = () => new Date().valueOf();
-export const currentTimestamp = () => dayjs().add(9, "hours").format();
+export const currentTimestamp = () => dayjs().format();
 export const currentDatetime = () => dayjs().add(9, "hours").format("YYYY/MM/DD HH:mm");
