@@ -7,10 +7,10 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 import * as functions from "firebase-functions";
-import { ENV } from "./constants";
+import {ENV} from "./constants";
 import v1ApiHandler from "./controllers/v1/api";
 import * as v1BatchHandler from "./controllers/v1/batch";
-import { BATCH } from "./constants/batch";
+import {BATCH} from "./constants/batch";
 
 export const v1 = functions.region(ENV.REGION).https.onRequest(v1ApiHandler);
 
