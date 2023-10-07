@@ -8,6 +8,6 @@ export const BATCH = {
     },
   },
   schedule: {
-    ur: "0 * * * *",
+    ur: "*/30 * * * *",
   },
 };
