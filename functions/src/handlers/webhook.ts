@@ -4,7 +4,7 @@ import {Message, WebhookEvent, WebhookRequestBody} from "@line/bot-sdk";
 import lineApi from "../services/line";
 import {makeTextMessage} from "../utils/line";
 import {processHistory} from "../usecases/ur";
-import { VALUES } from "../constants";
+import {VALUES} from "../constants";
 
 const enum TRIGGER {
   UR_STATUS = "確認",
@@ -45,7 +45,7 @@ const processEvent = async (event: WebhookEvent) => {
 
   if (event.type === "message") {
     // check line user id
-    if (event.source.type === 'user' && event.source.userId !== VALUES.linePushUserId) {
+    if (event.source.type === "user" && event.source.userId !== VALUES.linePushUserId) {
       result.messages = [
         makeTextMessage(
           "登録されているユーザーのリクエストではないです。"
