@@ -6,7 +6,7 @@ import {VALUES} from "../constants";
 export const fetchUrData = async (): Promise<void> => {
   try {
     const history = await processHistory();
-    const messages = history.messages;
+    const messages = history.messages
 
     if (history.isNotSameStatus && messages.length) {
       await lineApi.pushMessage(VALUES.linePushUserId, messages);
