@@ -4,6 +4,7 @@ import {Message, WebhookEvent, WebhookRequestBody} from "@line/bot-sdk";
 import lineApi from "../services/line";
 import {makeTextMessage} from "../utils/line";
 import {processHistory} from "../usecases/ur";
+import { VALUES } from "../constants";
 
 const enum TRIGGER {
   UR_STATUS = "確認",
@@ -43,8 +44,18 @@ const processEvent = async (event: WebhookEvent) => {
   });
 
   if (event.type === "message") {
+    // check line user id
+    if (event.source.type === 'user' && event.source.userId !== VALUES.linePushUserId) {
+      result.messages = [
+        makeTextMessage(
+          "登録されているユーザーのリクエストではないです。"
+        ),
+      ];
+    }
+
+    // main triggers
     if (
-      event.message.type === "text" &&
+      !result.messages.length && event.message.type === "text" &&
       targetTextList.includes(event.message.text)
     ) {
       const isForceUpdate = event.message.text === TRIGGER.UR_FORCE_STATUS;
@@ -61,17 +72,16 @@ const processEvent = async (event: WebhookEvent) => {
       ];
     }
 
+    // processing exceptions
     if (!result.messages.length) {
       result.messages = [
         makeTextMessage(
-          "トリガーではありません。\nUR空室確認は、\n「確認」を入力してください。"
+          "認識できません。\nUR空室確認は、\n「確認」および「更新」を入力してください。"
         ),
       ];
     }
 
-    const replyToken = event.replyToken;
-
-    await lineApi.replyMessage(replyToken, result.messages);
+    await lineApi.replyMessage(event.replyToken, result.messages);
   }
 };
 
