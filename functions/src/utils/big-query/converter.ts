@@ -1,10 +1,10 @@
-import { DocMasterHouse, DocRecord } from "../../types";
+import {DocMasterHouse, DocRecord} from "../../types";
 import {
   TableMasterHouses,
   TableMasterRooms,
   TableRoomRecords,
 } from "../../types/big-query/schema";
-import { currentDate, currentTimestamp } from "../date";
+import {currentDate, currentTimestamp} from "../date";
 
 export type ConvertKey = "masterHouses" | "masterRooms" | "roomRecords";
 
@@ -95,7 +95,7 @@ const converter = {
         } : {
           low_rent: info.rents[0],
           high_rent: null,
-        }
+        };
 
         convertedForBigQueryRows.push({
           identifier,

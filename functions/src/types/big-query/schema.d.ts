@@ -1,4 +1,4 @@
-import { TypeUrHouseId, TypeUrRoomId } from "..";
+import {TypeUrHouseId, TypeUrRoomId} from "..";
 
 interface ProtoTableType {
   identifier: string;

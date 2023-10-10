@@ -227,30 +227,30 @@ export const filterUrData = ({master: urData}: TypeUrCrawlingData): TypeUrFilter
 };
 
 const mergeRecords = (current: TypeUrRoomPrice[], prevDoc?: DocRecord) => {
-  const records: TypeUrRoomPrice[] = []
+  const records: TypeUrRoomPrice[] = [];
 
   if (!prevDoc) {
-    current.forEach((record) => records.push(record))
+    current.forEach((record) => records.push(record));
   } else {
     const prev = prevDoc.data;
     const timestamp = currentTimestamp();
 
     for (const currentRecord of current) {
-      const targetPrev = prev.find((obj) => obj.houseId === currentRecord.houseId && obj.roomId === currentRecord.roomId)
+      const targetPrev = prev.find((obj) => obj.houseId === currentRecord.houseId && obj.roomId === currentRecord.roomId);
 
       if (!targetPrev) {
-        records.push(currentRecord)
+        records.push(currentRecord);
       } else {
         records.push({
           ...currentRecord,
           updatedTimestamp: timestamp,
-        })
+        });
       }
     }
   }
 
-  return records
-}
+  return records;
+};
 
 export const processHistory = async (isOverride = false) => {
   const result = {
@@ -268,14 +268,14 @@ export const processHistory = async (isOverride = false) => {
   });
 
   // update records collection
-  const date = currentDate()
+  const date = currentDate();
 
   const prevRecords = await getDocument<DocRecord>({
     collection: FIRESTORE_COLLECTION.RECORDS,
     id: date,
   });
 
-  const targetRecords = mergeRecords(urData.records, prevRecords)
+  const targetRecords = mergeRecords(urData.records, prevRecords);
 
   await setDocument<DocRecord>({
     collection: FIRESTORE_COLLECTION.RECORDS,

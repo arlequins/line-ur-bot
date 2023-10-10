@@ -43,7 +43,7 @@ export const getDocuments = async<T>({
   date: string
 }): Promise<T[]> => {
   const readSnapshot = await db.collection(collection)
-  .where('date', "==", date)
-  .get();
+    .where("date", "==", date)
+    .get();
   return readSnapshot.docs.map((doc)=> doc.data() as T);
 };

@@ -6,7 +6,7 @@ const tz = "Asia/Tokyo";
 dayjs.extend(timezone);
 dayjs.tz.setDefault(tz);
 
-export const DATE_FORMAT = "YYYY-MM-DD"
+export const DATE_FORMAT = "YYYY-MM-DD";
 
 export const day = () => dayjs().add(9, "hours");
 export const currentTimestampNumber = () => new Date().valueOf();
