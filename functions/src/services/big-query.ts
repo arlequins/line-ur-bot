@@ -1,5 +1,5 @@
-import { BigQuery } from '@google-cloud/bigquery';
-import { ENV } from '../constants';
+import {BigQuery} from "@google-cloud/bigquery";
+import {ENV} from "../constants";
 
 const bigQueryClient = new BigQuery({
   autoRetry: true,

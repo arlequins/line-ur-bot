@@ -2,7 +2,7 @@ import * as logger from "firebase-functions/logger";
 import {processHistory} from "../usecases/ur";
 import lineApi from "../services/line";
 import {VALUES} from "../constants";
-import { processTransferTable } from "../usecases/big-query/transfer";
+import {processTransferTable} from "../usecases/big-query/transfer";
 
 export const fetchUrData = async (): Promise<void> => {
   try {
@@ -24,7 +24,7 @@ export const fetchUrData = async (): Promise<void> => {
 
 export const transferBigQuery = async (): Promise<void> => {
   try {
-    const result = await processTransferTable()
+    const result = await processTransferTable();
 
     logger.info({
       count: {

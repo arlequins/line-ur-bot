@@ -10,8 +10,8 @@ import {
   PayloadCreateOrGetTable,
   PayloadInsertTable,
 } from "../../types/big-query";
-import { ENV } from "../../constants";
-import { logger } from "firebase-functions/v1";
+import {ENV} from "../../constants";
+import {logger} from "firebase-functions/v1";
 
 const bigQueryBatchLimit = 100;
 const defaultOption = {
@@ -38,7 +38,7 @@ const createOrGetDataset = async (
       await bigQueryClient.getDatasets();
 
     const existInDataset = datasetResponse
-    .some((datasetResponseDatasets) => datasetResponseDatasets && Array.isArray(datasetResponseDatasets) ? datasetResponseDatasets.find((target) => target.id === datasetId)?.id ?? false : false)
+      .some((datasetResponseDatasets) => datasetResponseDatasets && Array.isArray(datasetResponseDatasets) ? datasetResponseDatasets.find((target) => target.id === datasetId)?.id ?? false : false);
 
     if (!existInDataset) {
       const [createdDataset] = await bigQueryClient.createDataset(
@@ -54,10 +54,10 @@ const createOrGetDataset = async (
     const fetchDataset = bigQueryClient.dataset(datasetId);
     response.dataset = fetchDataset;
   } catch (error) {
-    logger.error(error)
+    logger.error(error);
   }
 
-  logger.info(`Dataset ${datasetId} ${response.status}`)
+  logger.info(`Dataset ${datasetId} ${response.status}`);
   return response;
 };
 
@@ -106,16 +106,16 @@ export const createOrGetTable = async (
   }
 
   const clusteringObj =
-    clustering.fields.length
-      ? {
-          fields: clustering.fields,
-        }
-      : {};
-  const timePartitioningObj = timePartitioning
-    ? {
-        timePartitioning,
-      }
-    : {};
+    clustering.fields.length ?
+      {
+        fields: clustering.fields,
+      } :
+      {};
+  const timePartitioningObj = timePartitioning ?
+    {
+      timePartitioning,
+    } :
+    {};
   // For all options, see https://cloud.google.com/bigquery/docs/reference/v2/tables#resource
   const options = {
     schema,
@@ -164,12 +164,12 @@ export const insertRows = async<T> (
   try {
     if (rows.length > 0) {
       const resultCount = await splitInsert(table, rows);
-      logger.info(`inserted result[${rows.length}|${resultCount}] ${rows.length} rows`)
+      logger.info(`inserted result[${rows.length}|${resultCount}] ${rows.length} rows`);
     } else {
-      logger.info("row is zero. skip insert")
+      logger.info("row is zero. skip insert");
     }
   } catch (error) {
-    logger.error(error)
-    throw error
+    logger.error(error);
+    throw error;
   }
 };

@@ -1,15 +1,15 @@
-import { logger } from "firebase-functions/v1";
+import {logger} from "firebase-functions/v1";
 import {
   createOrGetTable,
   insertRows,
   setBigQueryDataset,
 } from "../../utils/big-query";
-import { PayloadCreateOrGetTable } from "../../types/big-query";
-import { TypeConvertPayload } from "../../utils/big-query/converter";
-import { TableMasterHouses, TableMasterRooms, TableRoomRecords } from "../../types/big-query/schema";
-import { tableInfo } from "../../constants/big-query";
+import {PayloadCreateOrGetTable} from "../../types/big-query";
+import {TypeConvertPayload} from "../../utils/big-query/converter";
+import {TableMasterHouses, TableMasterRooms, TableRoomRecords} from "../../types/big-query/schema";
+import {tableInfo} from "../../constants/big-query";
 
-const makeTable = async(schema: PayloadCreateOrGetTable, isResetTable: boolean = false) => {
+const makeTable = async (schema: PayloadCreateOrGetTable, isResetTable = false) => {
   try {
     const bigQueryDataset = await setBigQueryDataset();
 
@@ -27,13 +27,13 @@ const makeTable = async(schema: PayloadCreateOrGetTable, isResetTable: boolean =
       return false;
     }
 
-    return bigQueryTable.table
+    return bigQueryTable.table;
   } catch (error) {
     logger.error(error);
 
     return null;
   }
-}
+};
 
 const makeTableAndInsertRows = async<T> ({
   schema,
@@ -42,57 +42,55 @@ const makeTableAndInsertRows = async<T> ({
   schema: PayloadCreateOrGetTable
   rows: T[]
 }): Promise<void> => {
-
-  const table = await makeTable(schema, false)
+  const table = await makeTable(schema, false);
 
   if (!table) {
-    throw new Error('creating table error')
+    throw new Error("creating table error");
   }
 
   await insertRows(table, rows);
 };
 
-const transferTable = async(data: TypeConvertPayload) => {
+const transferTable = async (data: TypeConvertPayload) => {
   try {
-    const rows = data.rows
+    const rows = data.rows;
 
     if (data.rows.length) {
       await makeTableAndInsertRows<TableMasterHouses|TableMasterRooms|TableRoomRecords>({
-        schema: tableInfo[data.type], rows
-      })
+        schema: tableInfo[data.type], rows,
+      });
     }
 
     logger.info({
       messageCount: rows.length,
       status: "transfer done",
     });
-
   } catch (error) {
     logger.error(error);
   }
-}
+};
 
-export const processTransferTable = async() => {
+export const processTransferTable = async () => {
   const payload = {
     masterHouses: [] as TableMasterHouses[],
     masterRooms: [] as TableMasterRooms[],
-    roomRecords: [] as TableRoomRecords[]
-  }
+    roomRecords: [] as TableRoomRecords[],
+  };
 
   await transferTable({
-    type: 'masterHouses',
+    type: "masterHouses",
     rows: payload.masterHouses,
-  })
+  });
 
   await transferTable({
-    type: 'masterRooms',
+    type: "masterRooms",
     rows: payload.masterRooms,
-  })
+  });
 
   await transferTable({
-    type: 'roomRecords',
+    type: "roomRecords",
     rows: payload.roomRecords,
-  })
+  });
 
-  return payload
-}
+  return payload;
+};

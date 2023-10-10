@@ -1,4 +1,4 @@
-import { Dataset, Table, TableField } from '@google-cloud/bigquery';
+import {Dataset, Table, TableField} from "@google-cloud/bigquery";
 
 export interface BigDataset {
   name: string;

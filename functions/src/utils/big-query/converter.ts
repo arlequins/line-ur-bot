@@ -1,27 +1,26 @@
-import { DocMasterHouse, DocRecord } from "../../types";
+import {DocMasterHouse, DocRecord} from "../../types";
 import {
   TableMasterHouses,
   TableMasterRooms,
   TableRoomRecords,
 } from "../../types/big-query/schema";
-import { currentDate, day } from "../date";
 
-export type ConvertKey = 'masterHouses' | 'masterRooms' | 'roomRecords'
+export type ConvertKey = "masterHouses" | "masterRooms" | "roomRecords"
 
 export type ConvertPayload = DocMasterHouse & DocMasterHouse[] & DocRecord[]
 
 export type TypeConvertHouses = {
-  type: 'masterHouses'
+  type: "masterHouses"
   rows: TableMasterHouses[]
 }
 
 export type TypeConvertRooms = {
-  type: 'masterRooms'
+  type: "masterRooms"
   rows: TableMasterRooms[]
 }
 
 export type TypeRoomRecords = {
-  type: 'roomRecords'
+  type: "roomRecords"
   rows: TableRoomRecords[]
 }
 
@@ -29,8 +28,8 @@ export type TypeConvertPayload = TypeConvertHouses | TypeConvertRooms | TypeRoom
 
 const converter = {
   masterHouses: (list: DocMasterHouse): TableMasterHouses[] => {
-    const syncTimestamp = day().valueOf();
-    const identifier = currentDate();
+    // const syncTimestamp = day().valueOf();
+    // const identifier = currentDate();
     const convertedForBigQueryRows = [] as TableMasterHouses[];
 
     // for (const obj of list.houses) {
@@ -46,8 +45,8 @@ const converter = {
     return convertedForBigQueryRows;
   },
   masterRooms: (list: DocMasterHouse[]): TableMasterRooms[] => {
-    const syncTimestamp = day().valueOf();
-    const identifier = currentDate();
+    // const syncTimestamp = day().valueOf();
+    // const identifier = currentDate();
     const convertedForBigQueryRows = [] as TableMasterRooms[];
 
     // for (const obj of list) {
@@ -63,8 +62,8 @@ const converter = {
     return convertedForBigQueryRows;
   },
   roomRecords: (list: DocRecord[]): TableRoomRecords[] => {
-    const syncTimestamp = day().valueOf();
-    const identifier = currentDate();
+    // const syncTimestamp = day().valueOf();
+    // const identifier = currentDate();
     const convertedForBigQueryRows = [] as TableRoomRecords[];
 
     // for (const obj of list) {
