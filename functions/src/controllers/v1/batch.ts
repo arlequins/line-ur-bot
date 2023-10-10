@@ -14,6 +14,19 @@ export const fetchUrData = async (): Promise<void> => {
   }
 };
 
+export const fetchLowCost = async (): Promise<void> => {
+  try {
+    await batchUsecases.fetchLowCost();
+
+    logger.info({
+      message: "fetchLowCost success",
+      status: 200,
+    });
+  } catch (error) {
+    logger.error(error);
+  }
+};
+
 export const transferBigQuery = async (): Promise<void> => {
   try {
     await batchUsecases.transferBigQuery();

@@ -16,14 +16,21 @@ import {BATCH} from "./constants/batch";
 export const v1 = functions.region(ENV.REGION).https.onRequest(v1ApiHandler);
 
 // batch
-export const fetchUrData = functions
+export const batchFetchUrData = functions
   .region(ENV.REGION)
   .runWith(BATCH.runWith.fetchUrData)
   .pubsub.schedule(BATCH.schedule.fetchUrData)
   .timeZone(ENV.TIMEZONE)
   .onRun(async () => await v1BatchHandler.fetchUrData());
 
-// export const transferBigQuery = functions
+export const batchFetchLowCost = functions
+  .region(ENV.REGION)
+  .runWith(BATCH.runWith.fetchLowCost)
+  .pubsub.schedule(BATCH.schedule.fetchLowCost)
+  .timeZone(ENV.TIMEZONE)
+  .onRun(async () => await v1BatchHandler.fetchLowCost());
+
+// export const batchTransferBigQuery = functions
 //   .region(ENV.REGION)
 //   .runWith(BATCH.runWith.transferBigQuery)
 //   .pubsub.schedule(BATCH.schedule.transferBigQuery)

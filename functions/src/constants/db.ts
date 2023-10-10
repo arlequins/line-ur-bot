@@ -10,4 +10,5 @@ export const enum FIRESTORE_COLLECTION_MASTER {
 
 export const enum FIRESTORE_COLLECTION_HISTORY {
   RECENT = "recent",
+  LOWCOST = "lowcost",
 }
