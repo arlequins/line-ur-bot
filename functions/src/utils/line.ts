@@ -119,7 +119,7 @@ export const makeFourthMessage = (
 export const makeLowcostMessage = (
   filterList: TypeUrFilterLowcost[],
 ): string => {
-  const lowHouse =  filterList[0]
+  const lowHouse = filterList[0];
   let str = `最安値：${convertRentsToYen(lowHouse.lowRents).join("~")} - ${filterList.length}件\n`;
   str += `対象物件：${filterList.length}件\n`;
 

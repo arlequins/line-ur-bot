@@ -14,7 +14,7 @@ const enum TRIGGER {
 
 const targetTextList: string[] = [
   TRIGGER.UR_STATUS, TRIGGER.UR_FORCE_STATUS,
-  TRIGGER.UR_LOWEST_PRICE
+  TRIGGER.UR_LOWEST_PRICE,
 ];
 
 const setProcessResultText = (
@@ -62,14 +62,12 @@ const processEvent = async (event: WebhookEvent) => {
       !result.messages.length && event.message.type === "text" &&
       targetTextList.includes(event.message.text)
     ) {
-
       if (event.message.text === TRIGGER.UR_LOWEST_PRICE) {
         const lowcost = await processLowcost();
 
         result.messages = [
           ...lowcost.messages,
         ];
-
       } else {
         const isForceUpdate = event.message.text === TRIGGER.UR_FORCE_STATUS;
         const history = await processHistory(isForceUpdate);

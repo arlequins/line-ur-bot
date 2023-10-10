@@ -9,7 +9,7 @@ import {saveBatchCommit} from "../db";
 import {objectEqualLength} from "../../utils";
 import {makeFirstMessage, makeFourthMessage, makeLowcostMessage, makeSecondMessage, makeTextMessage, makeThirdMessage} from "../../utils/line";
 import {Message} from "@line/bot-sdk";
-import { ResponseLeadTime, ResponseUrHouse, ResponseUrRoom } from "../../types/api";
+import {ResponseLeadTime, ResponseUrHouse, ResponseUrRoom} from "../../types/api";
 
 const defaultParseError = (num:number) => Number.isInteger(num) ? num : -1;
 const deleteYen = (str: string) => str.replace("円", "").replaceAll(",", "");
@@ -283,10 +283,10 @@ export const processHistory = async (isOverride = false) => {
 };
 
 const filterLowcostList = (rawList: ResponseLeadTime[]) => {
-  const list: TypeUrFilterLowcost[] = []
+  const list: TypeUrFilterLowcost[] = [];
 
   for (const raw of rawList) {
-    const rooms = raw.room.map(room => ({
+    const rooms = raw.room.map((room) => ({
       roomId: room.id,
       rents: convertRent(room.rent),
       commonfee: convertRentfee(room.commonfee),
@@ -294,13 +294,13 @@ const filterLowcostList = (rawList: ResponseLeadTime[]) => {
       type: room.type, // "2DK";
       floorspace: room.floorspace, // "50&#13217;";
       floor: room.floor, // "1階";
-    })).sort((a, b) => a.rents[0] - b.rents[0])
+    })).sort((a, b) => a.rents[0] - b.rents[0]);
 
     if (!rooms.length) {
-      continue
+      continue;
     }
 
-    const lowHouse = rooms[0]
+    const lowHouse = rooms[0];
 
     list.push({
       houseId: `${raw.shisya}_${raw.danchi}${raw.shikibetu}`,
@@ -310,13 +310,13 @@ const filterLowcostList = (rawList: ResponseLeadTime[]) => {
       rooms: rooms,
       lowRents: lowHouse.rents,
       lowCommonfee: lowHouse.commonfee,
-    })
+    });
   }
 
-  return list.filter((house) => house.roomCount).sort((a, b) => a.lowRents[0] - b.lowRents[0])
-}
+  return list.filter((house) => house.roomCount).sort((a, b) => a.lowRents[0] - b.lowRents[0]);
+};
 
-export const processLowcost = async (isOverride = false) => {
+export const processLowcost = async () => {
   const result = {
     messages: [] as Message[],
     isNotSameStatus: false,
@@ -325,12 +325,18 @@ export const processLowcost = async (isOverride = false) => {
   const list = await fetchLeadTimeList<ResponseLeadTime[]>();
 
   if (!list) {
-    throw new Error('fetchLeadTimeList error')
+    result.messages = [
+      makeTextMessage('確認中エラーが発生しました。\n再度リクエストしてください。')
+    ]
+    return result
   }
 
-  const filterList = filterLowcostList(list)
+  const filterList = filterLowcostList(list);
 
   if (!filterList.length) {
+    result.messages = [
+      makeTextMessage('条件に合う物件がないです。'),
+    ];
     return result
   }
 
@@ -342,7 +348,7 @@ export const processLowcost = async (isOverride = false) => {
 
   result.isNotSameStatus = !historyLowcost || (historyLowcost && !objectEqualLength(historyLowcost.data, filterList));
 
-  if (isOverride || result.isNotSameStatus) {
+  if (result.isNotSameStatus) {
     await setDocument<DocHistoryLowcost>({
       collection: FIRESTORE_COLLECTION.HISTORY,
       id: FIRESTORE_COLLECTION_HISTORY.LOWCOST,
@@ -354,6 +360,10 @@ export const processLowcost = async (isOverride = false) => {
 
     result.messages = [
       makeTextMessage(makeLowcostMessage(filterList)),
+    ];
+  } else {
+    result.messages = [
+      makeTextMessage('前回と同じです。'),
     ];
   }
 
