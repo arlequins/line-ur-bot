@@ -1,6 +1,7 @@
 export enum ENV {
   REGION = "asia-northeast1",
-  TIMEZONE = "Asia/Tokyo"
+  TIMEZONE = "Asia/Tokyo",
+  BIGQUERY_DATASET_NAME = 'ur_archives',
 }
 
 const setValues = () => {

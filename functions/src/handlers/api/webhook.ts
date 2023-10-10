@@ -1,10 +1,10 @@
 import {Request, Response} from "firebase-functions";
 import * as logger from "firebase-functions/logger";
 import {Message, WebhookEvent, WebhookRequestBody} from "@line/bot-sdk";
-import lineApi from "../services/line";
-import {makeTextMessage} from "../utils/line";
-import {processHistory} from "../usecases/ur";
-import {VALUES} from "../constants";
+import lineApi from "../../services/line";
+import {makeTextMessage} from "../../utils/line";
+import {processHistory} from "../../usecases/ur";
+import {VALUES} from "../../constants";
 
 const enum TRIGGER {
   UR_STATUS = "確認",
