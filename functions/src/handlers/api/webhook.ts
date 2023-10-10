@@ -9,9 +9,13 @@ import {VALUES} from "../../constants";
 const enum TRIGGER {
   UR_STATUS = "確認",
   UR_FORCE_STATUS = "更新",
+  UR_LOWEST_PRICE = "最安値",
 }
 
-const targetTextList: string[] = [TRIGGER.UR_STATUS, TRIGGER.UR_FORCE_STATUS];
+const targetTextList: string[] = [
+  TRIGGER.UR_STATUS, TRIGGER.UR_FORCE_STATUS,
+  TRIGGER.UR_LOWEST_PRICE
+];
 
 const setProcessResultText = (
   messagesLength: number,
@@ -58,25 +62,35 @@ const processEvent = async (event: WebhookEvent) => {
       !result.messages.length && event.message.type === "text" &&
       targetTextList.includes(event.message.text)
     ) {
-      const isForceUpdate = event.message.text === TRIGGER.UR_FORCE_STATUS;
-      const history = await processHistory(isForceUpdate);
-      const processResultText = setProcessResultText(
-        history.messages.length,
-        isForceUpdate,
-        history.isNotSameStatus
-      );
 
-      result.messages = [
-        ...history.messages,
-        makeTextMessage(processResultText),
-      ];
+      if (event.message.text === TRIGGER.UR_LOWEST_PRICE) {
+        const processLowcost = await processHistory();
+
+        result.messages = [
+          ...processLowcost.messages,
+        ];
+
+      } else {
+        const isForceUpdate = event.message.text === TRIGGER.UR_FORCE_STATUS;
+        const history = await processHistory(isForceUpdate);
+        const processResultText = setProcessResultText(
+          history.messages.length,
+          isForceUpdate,
+          history.isNotSameStatus
+        );
+
+        result.messages = [
+          ...history.messages,
+          makeTextMessage(processResultText),
+        ];
+      }
     }
 
     // processing exceptions
     if (!result.messages.length) {
       result.messages = [
         makeTextMessage(
-          "認識できません。\nUR空室確認は、\n「確認」および「更新」を入力してください。"
+          "認識できません。\nUR空室確認は、\n「確認」、「更新」、「最安値」を入力してください。"
         ),
       ];
     }
