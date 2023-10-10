@@ -120,15 +120,17 @@ export const makeLowcostMessage = (
   filterList: TypeUrFilterLowcost[],
 ): string => {
   const lowHouse = filterList[0];
-  let str = `最安値：${convertRentsToYen(lowHouse.lowRents).join("~")} - ${filterList.length}件\n`;
-  str += `対象物件：${filterList.length}件\n`;
+  let str = `最安値：${convertRentsToYen(lowHouse.lowRents).join("~")}\n`;
+  str += `全体対象物件：${filterList.length}件\n`;
 
-  for (const house of filterList) {
+  for (const [index, house] of Object.entries(filterList)) {
+    const count = Number.parseInt(index) + 1;
     str += "---------------------------\n";
-    str += `${house.name} - ${house.tdfk}\n部屋${house.roomCount}個\n`;
+    str += `${house.name} - 部屋${house.roomCount}個\n`;
 
-    for (const room of house.rooms) {
-      str += `${room.name}, ${room.type}, ${room.floor} - ${convertRentsToYen(room.rents).join("~")}\n`;
+    for (const [innerIndex, room] of Object.entries(house.rooms)) {
+      const innerCount = Number.parseInt(innerIndex) + 1;
+      str += `${room.name}, ${room.type}, ${room.floor} - ${convertRentsToYen(room.rents).join("~")}${!(count === filterList.length && innerCount === house.rooms.length) ? "\n" : ""}`;
     }
   }
 
