@@ -21,6 +21,7 @@ export type TypeUrRoomPrice = {
   houseId: TypeUrHouseId // "40_3410"
   roomId: TypeUrRoomId // "000030306"
   timestamp: string
+  updatedTimestamp: string|null
   rents: number[] // "102,400円"
   commonfee: number
 }
@@ -53,13 +54,13 @@ export type DocMasterHouse = {
 }
 
 export type DocRecord = {
-  docId: string
-  data: TypeUrRoomPrice
+  date: string
+  data: TypeUrRoomPrice[]
 }
 
 export type TypeUrCrawlingData = {
   master: DocMasterHouse
-  records: DocRecord[]
+  records: TypeUrRoomPrice[]
 }
 
 export type TypeUrFilterRawRoom = {

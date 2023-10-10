@@ -30,9 +30,9 @@ export const batchFetchLowCost = functions
   .timeZone(ENV.TIMEZONE)
   .onRun(async () => await v1BatchHandler.fetchLowCost());
 
-// export const batchTransferBigQuery = functions
-//   .region(ENV.REGION)
-//   .runWith(BATCH.runWith.transferBigQuery)
-//   .pubsub.schedule(BATCH.schedule.transferBigQuery)
-//   .timeZone(ENV.TIMEZONE)
-//   .onRun(async () => await v1BatchHandler.transferBigQuery());
+export const batchTransferBigQuery = functions
+  .region(ENV.REGION)
+  .runWith(BATCH.runWith.transferBigQuery)
+  .pubsub.schedule(BATCH.schedule.transferBigQuery)
+  .timeZone(ENV.TIMEZONE)
+  .onRun(async () => await v1BatchHandler.transferBigQuery());

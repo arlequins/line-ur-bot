@@ -1,73 +1,44 @@
 export const masterHouses = [
-  {
-    name: "identifier",
-    type: "DATE",
-    mode: "REQUIRED",
-  },
-  {name: "user_id", type: "INTEGER", mode: "REQUIRED"},
-  {name: "line_user_id", type: "STRING", mode: "NULLABLE"},
-  {name: "nearme_user_id", type: "STRING", mode: "NULLABLE"},
-  {name: "stripe_customer_id", type: "STRING", mode: "NULLABLE"},
-  {name: "mico_user_id", type: "INTEGER", mode: "NULLABLE"},
-  {name: "default_payment_method_type", type: "INTEGER", mode: "NULLABLE"},
-  {name: "saved_payment_method_id", type: "STRING", mode: "NULLABLE"},
+  {name: "identifier", type: "DATE", mode: "REQUIRED"},
 
-  {name: "user_created_at", type: "DATETIME", mode: "NULLABLE"},
-  {name: "line_user_created_at", type: "DATETIME", mode: "NULLABLE"},
-  {name: "nearme_user_created_at", type: "DATETIME", mode: "NULLABLE"},
-  {name: "stripe_customer_created_at", type: "DATETIME", mode: "NULLABLE"},
-  {name: "mico_user_last_created_at", type: "DATETIME", mode: "NULLABLE"},
+  {name: "house_id", type: "STRING", mode: "REQUIRED"},
 
   // timestamp
-  {
-    name: "sync_timestamp",
-    type: "INTEGER",
-  },
+  {name: "sync_timestamp", type: "INTEGER"},
 ];
 
 export const masterRooms = [
-  {
-    name: "identifier",
-    type: "DATE",
-    mode: "REQUIRED",
-  },
-  {name: "user_id", type: "INTEGER", mode: "REQUIRED"},
-  {name: "line_user_id", type: "STRING", mode: "NULLABLE"},
-  {name: "nearme_user_id", type: "STRING", mode: "NULLABLE"},
-  {name: "stripe_customer_id", type: "STRING", mode: "NULLABLE"},
-  {name: "mico_user_id", type: "INTEGER", mode: "NULLABLE"},
-  {name: "default_payment_method_type", type: "INTEGER", mode: "NULLABLE"},
-  {name: "saved_payment_method_id", type: "STRING", mode: "NULLABLE"},
+  {name: "identifier", type: "DATE", mode: "REQUIRED"},
 
-  {name: "user_created_at", type: "DATETIME", mode: "NULLABLE"},
-  {name: "line_user_created_at", type: "DATETIME", mode: "NULLABLE"},
-  {name: "nearme_user_created_at", type: "DATETIME", mode: "NULLABLE"},
-  {name: "stripe_customer_created_at", type: "DATETIME", mode: "NULLABLE"},
-  {name: "mico_user_last_created_at", type: "DATETIME", mode: "NULLABLE"},
+  {name: "house_id", type: "STRING", mode: "REQUIRED"},
+  {name: "room_id", type: "STRING", mode: "REQUIRED"},
 
   // timestamp
-  {
-    name: "sync_timestamp",
-    type: "INTEGER",
-  },
+  {name: "sync_timestamp", type: "INTEGER"},
 ];
 
 export const roomRecords = [
-  {
-    name: "identifier",
-    type: "DATE",
-    mode: "REQUIRED",
-  },
-  {name: "user_id", type: "INTEGER", mode: "REQUIRED"},
+  {name: "identifier", type: "DATE", mode: "REQUIRED"},
 
-  {name: "tag_id", type: "INTEGER", mode: "NULLABLE"},
-  {name: "tag_name", type: "STRING", mode: "NULLABLE"},
-  {name: "tag_folder_id", type: "INTEGER", mode: "NULLABLE"},
-  {name: "tag_folder_name", type: "STRING", mode: "NULLABLE"},
+  {name: "house_id", type: "STRING", mode: "REQUIRED"},
+  {name: "room_id", type: "STRING", mode: "REQUIRED"},
+
+  {name: "pref", type: "STRING", mode: "NULLABLE"},
+  {name: "area", type: "STRING", mode: "NULLABLE"},
+  {name: "house_name", type: "STRING", mode: "NULLABLE"},
+  {name: "skcs", type: "STRING", mode: "NULLABLE"},
+  {name: "room_name", type: "STRING", mode: "NULLABLE"},
+  {name: "type", type: "STRING", mode: "NULLABLE"},
+  {name: "floorspace", type: "STRING", mode: "NULLABLE"},
+  {name: "floor", type: "STRING", mode: "NULLABLE"},
+  {name: "timestamp", type: "STRING", mode: "NULLABLE"},
+  {name: "updated_timestamp", type: "STRING", mode: "NULLABLE"},
+
+  {name: "low_rent", type: "INTEGER", mode: "NULLABLE"},
+  {name: "high_rent", type: "INTEGER", mode: "NULLABLE"},
+
+  {name: "commonfee", type: "INTEGER", mode: "NULLABLE"},
 
   // timestamp
-  {
-    name: "sync_timestamp",
-    type: "INTEGER",
-  },
+  {name: "sync_timestamp", type: "INTEGER"},
 ];

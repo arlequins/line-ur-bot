@@ -1,33 +1,37 @@
+import { TypeUrHouseId, TypeUrRoomId } from "..";
+
 interface ProtoTableType {
   identifier: string;
-  sync_timestamp: number;
+  sync_timestamp: string;
 }
 
 export interface TableMasterHouses extends ProtoTableType {
-  user_id: number;
-  line_user_id: string;
-  nearme_user_id: string;
-  stripe_customer_id: string;
-  mico_user_id: number;
-  default_payment_method_type: number;
-  saved_payment_method_id: string;
-  user_created_at: string;
-  line_user_created_at: string;
-  nearme_user_created_at: string;
-  stripe_customer_created_at: string;
-  mico_user_last_created_at: string;
+  house_id: TypeUrHouseId // "40_3410"
 }
 
 export interface TableMasterRooms extends ProtoTableType {
-  user_id: number;
-  mico_user_id: number;
-  mico_created_at: string;
-  mico_updated_at: string;
-  blocking: boolean;
+  house_id: TypeUrHouseId // "40_3410"
+  room_id: TypeUrRoomId // "000030306"
 }
 
 export interface TableRoomRecords extends ProtoTableType {
-  user_id: number;
-  profile_key: string;
-  profile_value: string;
+  house_id: TypeUrHouseId // "40_3410"
+  room_id: TypeUrRoomId // "000030306"
+
+  pref: string // '14'
+  area: string // '01'
+  house_name: string // "シティコート元住吉"
+  skcs: string // "川崎市中原区"
+
+  room_name: string // "3号棟306号室"
+  type: string // "1LDK"
+  floorspace: string // "49&#13217;"
+  floor: string // "3階"
+
+  timestamp: string
+  updated_timestamp: string|null
+
+  low_rent: number // "102,400円"
+  high_rent: number|null // "102,400円"
+  commonfee: number
 }

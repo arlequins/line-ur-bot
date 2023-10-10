@@ -25,3 +25,25 @@ export const getDocument = async<T>({
 
   return readData;
 };
+
+export const getAllDocuments = async<T>({
+  collection,
+}: {
+  collection: string
+}): Promise<T[]> => {
+  const readSnapshot = await db.collection(collection).get();
+  return readSnapshot.docs.map((doc)=> doc.data() as T);
+};
+
+export const getDocuments = async<T>({
+  collection,
+  date,
+}: {
+  collection: string
+  date: string
+}): Promise<T[]> => {
+  const readSnapshot = await db.collection(collection)
+  .where('date', "==", date)
+  .get();
+  return readSnapshot.docs.map((doc)=> doc.data() as T);
+};

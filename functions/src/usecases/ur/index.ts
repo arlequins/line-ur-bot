@@ -3,9 +3,8 @@ import {FIRESTORE_COLLECTION, FIRESTORE_COLLECTION_HISTORY, FIRESTORE_COLLECTION
 import {urAreaPrefs, targetHouseIds} from "../../constants/ur";
 import {fetchAreaList, fetchLeadTimeList, fetchRoomList} from "../../services/ur-api";
 import {TypeUrRoom, TypeUrRoomPrice, DocRecord, DocMasterHouse, TypeUrCrawlingData, TypeUrFilterRaw, TypeUrFilterRawRoom, DocHistoryRecent, DocHistoryLowcost, TypeUrFilterLowcost} from "../../types";
-import {currentTimestamp} from "../../utils/date";
+import {currentDate, currentTimestamp} from "../../utils/date";
 import {getDocument, setDocument} from "../../utils/db";
-import {saveBatchCommit} from "../db";
 import {objectEqualLength} from "../../utils";
 import {makeFirstMessage, makeFourthMessage, makeLowcostMessage, makeSecondMessage, makeTextMessage, makeThirdMessage} from "../../utils/line";
 import {Message} from "@line/bot-sdk";
@@ -99,6 +98,7 @@ const convertUrArea = async ({
             houseId,
             roomId: room.roomId,
             timestamp,
+            updatedTimestamp: null,
             rents: convertRent(roomInfo.rent),
             commonfee: convertCommonfee(roomInfo.commonfee),
           });
@@ -142,7 +142,7 @@ export const pullUrData = async (): Promise<TypeUrCrawlingData> => {
       rooms: [],
       roomPrices: [],
     } as DocMasterHouse,
-    records: [] as DocRecord[],
+    records: [] as TypeUrRoomPrice[],
   };
 
   for (const pref of urAreaPrefs) {
@@ -167,10 +167,7 @@ export const pullUrData = async (): Promise<TypeUrCrawlingData> => {
       resultArea.rooms.forEach((obj) => result.master.rooms.push(obj));
       resultArea.roomPrices.forEach((obj) => {
         result.master.roomPrices.push(obj);
-        result.records.push({
-          docId: `${obj.houseId}_${obj.roomId}`,
-          data: obj,
-        });
+        result.records.push(obj);
       });
     }
   }
@@ -229,6 +226,32 @@ export const filterUrData = ({master: urData}: TypeUrCrawlingData): TypeUrFilter
   return results;
 };
 
+const mergeRecords = (current: TypeUrRoomPrice[], prevDoc?: DocRecord) => {
+  const records: TypeUrRoomPrice[] = []
+
+  if (!prevDoc) {
+    current.forEach((record) => records.push(record))
+  } else {
+    const prev = prevDoc.data;
+    const timestamp = currentTimestamp();
+
+    for (const currentRecord of current) {
+      const targetPrev = prev.find((obj) => obj.houseId === currentRecord.houseId && obj.roomId === currentRecord.roomId)
+
+      if (!targetPrev) {
+        records.push(currentRecord)
+      } else {
+        records.push({
+          ...currentRecord,
+          updatedTimestamp: timestamp,
+        })
+      }
+    }
+  }
+
+  return records
+}
+
 export const processHistory = async (isOverride = false) => {
   const result = {
     messages: [] as Message[],
@@ -245,10 +268,23 @@ export const processHistory = async (isOverride = false) => {
   });
 
   // update records collection
-  await saveBatchCommit<TypeUrRoomPrice, DocRecord>(
-    FIRESTORE_COLLECTION.RECORDS,
-    urData.records
-  );
+  const date = currentDate()
+
+  const prevRecords = await getDocument<DocRecord>({
+    collection: FIRESTORE_COLLECTION.RECORDS,
+    id: date,
+  });
+
+  const targetRecords = mergeRecords(urData.records, prevRecords)
+
+  await setDocument<DocRecord>({
+    collection: FIRESTORE_COLLECTION.RECORDS,
+    id: date,
+    data: {
+      date,
+      data: targetRecords,
+    },
+  });
 
   // push messages
   const filteredUrData = filterUrData(urData);
@@ -365,50 +401,6 @@ export const processLowcost = async () => {
     result.messages = [
       makeTextMessage("前回と同じです。"),
     ];
-  }
-
-  return result;
-};
-
-export const pullLowcost = async (): Promise<TypeUrCrawlingData> => {
-  const result = {
-    master: {
-      houses: [],
-      housePrices: [],
-      rooms: [],
-      roomPrices: [],
-    } as DocMasterHouse,
-    records: [] as DocRecord[],
-  };
-
-  for (const pref of urAreaPrefs) {
-    for (const section of pref.sections) {
-      const payloadArea = {
-        tdfk: pref.code,
-        area: section,
-      };
-
-      const responseArea = await fetchAreaList<ResponseUrHouse[]>({
-        rent_low: "",
-        rent_high: "",
-        floorspace_low: "",
-        floorspace_high: "",
-        ...payloadArea,
-      });
-
-      const resultArea = await convertUrArea(payloadArea, responseArea);
-
-      resultArea.houses.forEach((obj) => result.master.houses.push(obj));
-      resultArea.housePrices.forEach((obj) => result.master.housePrices.push(obj));
-      resultArea.rooms.forEach((obj) => result.master.rooms.push(obj));
-      resultArea.roomPrices.forEach((obj) => {
-        result.master.roomPrices.push(obj);
-        result.records.push({
-          docId: `${obj.houseId}_${obj.roomId}`,
-          data: obj,
-        });
-      });
-    }
   }
 
   return result;

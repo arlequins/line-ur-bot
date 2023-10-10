@@ -5,9 +5,13 @@ import {
   setBigQueryDataset,
 } from "../../utils/big-query";
 import {PayloadCreateOrGetTable} from "../../types/big-query";
-import {TypeConvertPayload} from "../../utils/big-query/converter";
+import converter, {TypeConvertPayload} from "../../utils/big-query/converter";
 import {TableMasterHouses, TableMasterRooms, TableRoomRecords} from "../../types/big-query/schema";
 import {tableInfo} from "../../constants/big-query";
+import { DocMasterHouse, DocRecord } from "../../types";
+import { getDocument, getDocuments } from "../../utils/db";
+import { FIRESTORE_COLLECTION, FIRESTORE_COLLECTION_MASTER } from "../../constants/db";
+import { currentDate } from "../../utils/date";
 
 const makeTable = async (schema: PayloadCreateOrGetTable, isResetTable = false) => {
   try {
@@ -86,6 +90,25 @@ export const processTransferTable = async () => {
     type: "masterRooms",
     rows: payload.masterRooms,
   });
+
+  // process roomRecords
+  const masterHouse = await getDocument<DocMasterHouse>({
+    collection: FIRESTORE_COLLECTION.MASTER,
+    id: FIRESTORE_COLLECTION_MASTER.RECENT,
+  });
+
+  const date = currentDate()
+
+  const roomRecords = await getDocuments<DocRecord>({
+    collection: FIRESTORE_COLLECTION.RECORDS,
+    date,
+  });
+
+  if (!(masterHouse && roomRecords.length)) {
+    return payload
+  }
+
+  payload.roomRecords = converter.roomRecords(masterHouse, roomRecords);
 
   await transferTable({
     type: "roomRecords",
