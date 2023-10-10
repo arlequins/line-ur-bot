@@ -3,7 +3,7 @@ import * as logger from "firebase-functions/logger";
 import {Message, WebhookEvent, WebhookRequestBody} from "@line/bot-sdk";
 import lineApi from "../../services/line";
 import {makeTextMessage} from "../../utils/line";
-import {processHistory} from "../../usecases/ur";
+import {processHistory, processLowcost} from "../../usecases/ur";
 import {VALUES} from "../../constants";
 
 const enum TRIGGER {
@@ -64,10 +64,10 @@ const processEvent = async (event: WebhookEvent) => {
     ) {
 
       if (event.message.text === TRIGGER.UR_LOWEST_PRICE) {
-        const processLowcost = await processHistory();
+        const lowcost = await processLowcost();
 
         result.messages = [
-          ...processLowcost.messages,
+          ...lowcost.messages,
         ];
 
       } else {
