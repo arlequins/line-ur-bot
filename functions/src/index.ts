@@ -23,9 +23,9 @@ export const fetchUrData = functions
   .timeZone(ENV.TIMEZONE)
   .onRun(async () => await v1BatchHandler.fetchUrData());
 
-  export const transferBigQuery = functions
-  .region(ENV.REGION)
-  .runWith(BATCH.runWith.transferBigQuery)
-  .pubsub.schedule(BATCH.schedule.transferBigQuery)
-  .timeZone(ENV.TIMEZONE)
-  .onRun(async () => await v1BatchHandler.transferBigQuery());
+// export const transferBigQuery = functions
+//   .region(ENV.REGION)
+//   .runWith(BATCH.runWith.transferBigQuery)
+//   .pubsub.schedule(BATCH.schedule.transferBigQuery)
+//   .timeZone(ENV.TIMEZONE)
+//   .onRun(async () => await v1BatchHandler.transferBigQuery());
