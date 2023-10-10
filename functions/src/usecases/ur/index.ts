@@ -326,18 +326,18 @@ export const processLowcost = async () => {
 
   if (!list) {
     result.messages = [
-      makeTextMessage('確認中エラーが発生しました。\n再度リクエストしてください。')
-    ]
-    return result
+      makeTextMessage("確認中エラーが発生しました。\n再度リクエストしてください。"),
+    ];
+    return result;
   }
 
   const filterList = filterLowcostList(list);
 
   if (!filterList.length) {
     result.messages = [
-      makeTextMessage('条件に合う物件がないです。'),
+      makeTextMessage("条件に合う物件がないです。"),
     ];
-    return result
+    return result;
   }
 
   // compare previous push
@@ -363,7 +363,7 @@ export const processLowcost = async () => {
     ];
   } else {
     result.messages = [
-      makeTextMessage('前回と同じです。'),
+      makeTextMessage("前回と同じです。"),
     ];
   }
 

@@ -627,3 +627,546 @@ id: 20_5020
     "shopHoliday": "水曜、年末年始（12/29～1/3）"
 }
 ```
+
+# fetchLeadTimeList
+https://chintai.sumai.ur-net.go.jp/chintai/api/bukken/result/bukken_result/
+
+## request
+```
+rent_low:
+rent_high:90000
+room:1R,1K
+room:1DK
+room:1LDK
+room:2DK
+walk:
+floorspace_low:
+floorspace_high:
+years:25
+facility_hotfloor:1
+station_cd:2334
+station_condition:2334,2336,2811,3107,1692,2308,2618,2726,3275,1486,2216,2335,2800,2426,2654,2727,2832,2874,3270,1541,1582,2113,2193,2248,2453,2656,3169,3271,3276,3278,8938,2087,2237,2351,2514,3171,1469,1673,2265,1490,1573,2009,2858,2864,8939,2322,2382,2407,2272,3168,1474,1742,1762,2373,2643,3289,2658,8929,1697,1741,1987,3091,2189,2264,2343,3277,8930,1533,1704,1761,2124,2413,2713,8919,1858,2310,2661,2849,2888,1779,1476,1625,1647,1923,2390,3170,8937,1540,1660,1760,1942,2091,2529,2672,1817,2387,2528,2590,2838,1709,2140,2221,2416,2506,2708,2835,3136,8931,1978,2138,2151,2159,2307,2402,1483,1525,1878,1928,2158,2256,2340,2437,2474,2996,3296,2778,1938,1996,2518,2825,1687,1795,2103,2305,2633,2824,2876,2923,2934,2547,2770,3188,1492,1668,1734,1816,2121,2191,2236,2511,2806,3012,8918,1472,1574,2728,3043,1630,2491,2563,3072,9278,1516,1636,1662,1706,2001,2312,2443,2667,2694,2844,3077,3228,3241,9267,1933,2614,2739,2783,1972,2179,2190,2284,2329,2354,2644,2757,2786,2837,2866,3284,9279,9596,1575,2749,9265,2616,1605,1736,1765,1901,1908,1997,2388,2498,2592,2606,2765,2879,2956,2991,3240,9595,2399,2755,3141,8936,1539,1894,2135,2386,2420,2582,2861,3011,3073,3294,8920,8921,3129,3182,9264,1631,2710,2771,3148,1561,1627,1629,1677,1872,1930,1988,1991,2217,2242,2349,2774,2827,2975,3071,3287,8932,2255,2353,9263,2615,8935,1658,2042,2455,2554,2636,2716,3147,3192,8933,9594,1890,2250,2666,2761,3244,9266,1700,2843,2865,2969,1698,1881,1883,1896,2243,2417,2418,2553,2591,2637,2735,2922,8934,1535,2021,2127,2646,9262,1963,3144,1489,1537,1600,1982,2040,2139,2427,2611,2622,2719,2809,3303,1491,1685,1730,1956,2251,2412,2768,2957,2369,2853,2989,1654,1659,1689,2114,2376,2464,2489,2508,2602,2612,2927,3035,1468,1488,1870,2269,2289,2355,2724,9261,3145,1671,2047,2109,2188,2629,2662,3156,3274,2422,2772,2798,3014,9260,9268,1477,1744,2225,2321,2586,2600,2815,2967,3030,1611,2479,2613,2729,2862,2997,3293,9269,2980,3273,1590,1678,1958,2240,2472,2484,2492,2505,2801,2962,3095,3108,3248,1752,1868,1940,2059,2206,2709,2732,3085,9259,9503,2112,2403,2645,2919,1665,2253,2287,2884,2920,3059,3250,9584,1672,1989,2049,2990,3125,3152,9270,1584,1794,2085,2165,2252,2363,2649,2657,2677,2745,1745,1911,2015,2450,2723,3122,2006,2122,2241,2318,2364,2423,2610,2714,3146,3292,9252,2075,2883,3109,9182,9249,9271,1728,2460,2630,1514,1545,1596,1944,2224,2324,2561,2566,2707,3070,9585,1482,1520,1782,1959,2341,2410,3222,9258,2011,3067,1577,1799,2959,2961,2971,1684,2050,2620,3219,9257,9272,3034,2018,2044,2454,3160,3175,3180,3220,3243,3272,9586,9606,1755,1886,1897,2730,2766,2926,3269,9183,1977,2238,2198,2421,2493,2502,1731,2069,2088,2573,2785,3069,3282,9256,9625,2803,1591,1652,1787,2043,2178,2736,2851,3110,3184,3225,9587,1640,1887,2120,2847,9184,2480,1961,2000,2025,2640,2893,3150,9588,2281,2298,2316,2347,2439,2564,2569,2693,3140,9255,9530,1965,2172,1813,1909,2046,2083,2126,2261,2916,3022,3100,3195,1758,1776,1895,2092,2160,3260,9490,2742,1800,1986,2028,2326,2501,2515,2530,2854,9589,1633,1739,1970,2317,2327,2930,3155,3288,9185,9254,9452,1538,1680,1910,1934,1995,2067,2458,2700,2721,2744,2857,2981,3111,9590,1649,1711,1757,1941,2808,3004,3132,3202,9244,9251,9253,9491,2045,1496,2207,3003,3096,3154,9457,1510,1857,2283,2404,2574,2706,9453,2041,2146,2306,2578,2900,2903,2932,3005,3128,9591,1712,1860,2111,2856,2897,2970,3041,9186,9250,1693,2496,2500,2796,2797,2976,3133,3138,3158,1487,1609,2054,2079,2497,2575,2444,1467,1756,1769,2303,2481,2482,2540,2675,2871,3102,3229,9592,1900,2473,2494,2892,3113,3139,9492,9624,1465,1579,1796,2406,2994,1464,1601,2110,2434,2538,2795,2886,3123,3172,3205,9593,1818,1939,2244,2405,2462,2684,2787,2891,9248,9432,1674,1733,2299,2840,3291,9560,1945,2052,2208,2339,2560,2821,3089,9247,9493,1612,1705,1811,1903,2132,2571,2794,1971,2090,2148,2483,2567,2619,2648,2880,3151,9187,9312,9583,1650,1809,1839,1966,2068,2169,2177,2219,2696,2731,3038,3055,3161,3262,1560,1729,1748,1766,2330,2389,2394,2875,3002,3265,9246,9495,2333,2673,2873,3232,9313,9528,1913,2072,2076,2143,2325,2408,2424,2623,2650,2717,3050,9245,9582,3008,1664,2186,2804,2968,2983,3117,3204,9655,1580,1735,1853,1875,2074,2397,2451,2831,2895,2929,1507,2141,2234,2411,2647,3029,9314,9529,2064,2290,2362,2425,2555,2921,2979,3098,3215,9581,1581,1925,2365,2965,3178,3224,1721,1975,2098,2107,2215,2557,2683,2748,2998,3079,9494,1462,1481,1546,2002,2183,2445,2949,9315,9316,1592,1666,1889,1952,2119,2182,2332,2357,2370,2430,2584,2784,2855,2872,3009,3048,3053,3120,1463,2603,2752,3028,1578,1695,1852,2078,2393,2664,3042,3078,3097,9580,1791,2089,2579,2638,3062,1565,1618,1788,1879,1955,2125,2171,2549,2977,3124,3189,3200,3238,2320,2668,2836,2901,3230,1589,1946,2097,2227,2313,2345,2414,2887,3044,3099,3118,1566,2488,2889,1512,1789,1840,1953,2176,2513,2532,2568,2754,2793,2842,2964,3020,3221,3301,8965,2081,2510,2543,2767,1567,1597,1855,1888,2034,2071,2346,2352,2810,2935,3031,3033,3076,3264,9496
+station_cost:90
+station_change:5
+mode:leadtime
+eki:2334
+block:kanto
+tdfk:13
+tdfk:14
+tdfk:12
+tdfk:13
+tdfk:14
+tdfk:12
+rireki_tdfk:13
+orderByField:1
+pageSize:10
+pageIndex:0
+shisya:20
+danchi:
+shikibetu:
+pageIndexRoom:0
+sp:
+```
+
+## response
+```:json
+[
+    {
+        "madori": null,
+        "allCount": "2",
+        "bukkenCount": "517",
+        "roomCount": "2",
+        "bukkenImg": "https://chintai.sumai.ur-net.go.jp/chintai/img_photo/30/30_600/30_600_photo_s.jpg",
+        "pageIndex": "0",
+        "rowMax": "10",
+        "pageMax": "5",
+        "rentMin": null,
+        "rentMax": null,
+        "station": [
+            "1811",
+            "2628",
+            "3099"
+        ],
+        "block": "kanto",
+        "tdfk": "chiba",
+        "shisya": "30",
+        "danchi": "600",
+        "shikibetu": "0",
+        "danchiNm": "コンフォール柏豊四季台",
+        "traffic": "JR常磐線「柏」駅バス4分 徒歩1～6分<br>東武野田線「豊四季」駅 徒歩23～31分<br>JR常磐線「南柏」駅 徒歩32～40分",
+        "trafficpdf": "30_6000_traffic.pdf",
+        "place": "柏市豊四季台3-1",
+        "shikikin": "2か月",
+        "requirement": "ナシ",
+        "kouzou": "鉄筋コンクリート造",
+        "floorAll": "14",
+        "shopBlock": "kanto",
+        "shopTdfk": "chiba",
+        "shopHtmlName": "kashiwa",
+        "shopName": "UR柏営業センター",
+        "shopNum": "04-7196-6152",
+        "shopOpentime": "9：30～18：00",
+        "shopHoliday": "水曜、年末年始（12/29～1/3）",
+        "kiboRoom": [],
+        "system": [
+            {
+                "制度_IMG": "btn_kinkyo.png",
+                "制度名": "近居割",
+                "制度HTML": "kinkyo"
+            },
+            {
+                "制度_IMG": "btn_kinkyo_wide.png",
+                "制度名": "近居割WIDE",
+                "制度HTML": "kinkyo_wide"
+            }
+        ],
+        "room": [
+            {
+                "shisya": "30",
+                "danchi": "600",
+                "shikibetu": "0",
+                "roomLinkPc": "/chintai/kanto/chiba/30_6000_room.html?JKSS=000170107",
+                "roomLinkSp": "/chintai/sp/kanto/chiba/30_6000_room.html?JKSS=000170107",
+                "roomNmMain": "17号棟",
+                "roomNmSub": "107号室",
+                "system": [
+                    {
+                        "制度_IMG": "btn_kinkyo.png",
+                        "制度名": "近居割",
+                        "制度HTML": "kinkyo"
+                    },
+                    {
+                        "制度_IMG": "btn_kinkyo_wide.png",
+                        "制度名": "近居割WIDE",
+                        "制度HTML": "kinkyo_wide"
+                    }
+                ],
+                "allCount": "2",
+                "pageIndexRoom": "0",
+                "rowMaxNext": "10",
+                "rowMax": "5",
+                "allRoomUrl": "/chintai/kanto/chiba/30_6000.html",
+                "design": [],
+                "featureParam": [],
+                "id": "000170107",
+                "year": null,
+                "name": null,
+                "shikikin": null,
+                "requirement": null,
+                "madori": "https://chintai.sumai.ur-net.go.jp/chintai/img_madori/30/30_600/30_600_0-00-0017_Jx_RA_01_00002_s.gif",
+                "rent": "84,700円",
+                "rent_normal": "",
+                "rent_normal_css": " dn",
+                "commonfee": "3,100円",
+                "commonfee_sp": null,
+                "status": null,
+                "type": "2DK",
+                "floorspace": "50&#13217;",
+                "floor": "1階",
+                "urlDetail": null,
+                "urlDetail_sp": null,
+                "feature": null
+            },
+            {
+                "shisya": "30",
+                "danchi": "600",
+                "shikibetu": "0",
+                "roomLinkPc": "/chintai/kanto/chiba/30_6000_room.html?JKSS=000100202",
+                "roomLinkSp": "/chintai/sp/kanto/chiba/30_6000_room.html?JKSS=000100202",
+                "roomNmMain": "10号棟",
+                "roomNmSub": "202号室",
+                "system": [
+                    {
+                        "制度_IMG": "btn_kinkyo.png",
+                        "制度名": "近居割",
+                        "制度HTML": "kinkyo"
+                    },
+                    {
+                        "制度_IMG": "btn_kinkyo_wide.png",
+                        "制度名": "近居割WIDE",
+                        "制度HTML": "kinkyo_wide"
+                    }
+                ],
+                "allCount": "2",
+                "pageIndexRoom": "0",
+                "rowMaxNext": "10",
+                "rowMax": "5",
+                "allRoomUrl": "/chintai/kanto/chiba/30_6000.html",
+                "design": [],
+                "featureParam": [],
+                "id": "000100202",
+                "year": null,
+                "name": null,
+                "shikikin": null,
+                "requirement": null,
+                "madori": "https://chintai.sumai.ur-net.go.jp/chintai/img_madori/30/30_600/30_600_0-00-0010_Ex_RA_01_00003_s.gif",
+                "rent": "85,900円",
+                "rent_normal": "",
+                "rent_normal_css": " dn",
+                "commonfee": "3,100円",
+                "commonfee_sp": null,
+                "status": null,
+                "type": "2DK",
+                "floorspace": "50&#13217;",
+                "floor": "2階",
+                "urlDetail": null,
+                "urlDetail_sp": null,
+                "feature": null
+            }
+        ]
+    },
+    {
+        "madori": null,
+        "allCount": "2",
+        "bukkenCount": "517",
+        "roomCount": "0",
+        "bukkenImg": "https://chintai.sumai.ur-net.go.jp/chintai/img_photo/20/20_031/20_031_photo_s.jpg",
+        "pageIndex": "0",
+        "rowMax": "10",
+        "pageMax": "5",
+        "rentMin": null,
+        "rentMax": null,
+        "station": [
+            "2883",
+            "2997",
+            "3072"
+        ],
+        "block": "kanto",
+        "tdfk": "tokyo",
+        "shisya": "20",
+        "danchi": "031",
+        "shikibetu": "0",
+        "danchiNm": "東伏見（６１号棟）",
+        "traffic": "西武新宿線｢東伏見｣駅 徒歩12分<br>JR中央線ほか｢三鷹｣駅バス13分 徒歩3分<br>西武池袋線｢保谷｣駅バス6分 徒歩3分",
+        "trafficpdf": "",
+        "place": "西東京市富士町1-7",
+        "shikikin": "2か月",
+        "requirement": "ナシ",
+        "kouzou": "鉄筋コンクリート造",
+        "floorAll": "3",
+        "shopBlock": "kanto",
+        "shopTdfk": "tokyo",
+        "shopHtmlName": "higashifushimi",
+        "shopName": "UR東伏見現地案内所",
+        "shopNum": "042-464-3155",
+        "shopOpentime": "10：00～17：00",
+        "shopHoliday": "水曜、年末年始（12/29～1/3）",
+        "kiboRoom": [],
+        "system": [],
+        "room": []
+    },
+    {
+        "madori": null,
+        "allCount": "2",
+        "bukkenCount": "517",
+        "roomCount": "0",
+        "bukkenImg": "https://chintai.sumai.ur-net.go.jp/chintai/img_photo/20/20_042/20_042_photo_s.jpg",
+        "pageIndex": "0",
+        "rowMax": "10",
+        "pageMax": "5",
+        "rentMin": null,
+        "rentMax": null,
+        "station": [
+            "2774"
+        ],
+        "block": "kanto",
+        "tdfk": "tokyo",
+        "shisya": "20",
+        "danchi": "042",
+        "shikibetu": "0",
+        "danchiNm": "野方",
+        "traffic": "西武新宿線｢野方｣駅 徒歩6～7分",
+        "trafficpdf": "20_0420_traffic.pdf",
+        "place": "中野区野方5-7",
+        "shikikin": "2か月",
+        "requirement": "ナシ",
+        "kouzou": "鉄筋コンクリート造",
+        "floorAll": "4",
+        "shopBlock": "kanto",
+        "shopTdfk": "tokyo",
+        "shopHtmlName": "shinjuku",
+        "shopName": "UR新宿営業センター",
+        "shopNum": "03-3347-4330",
+        "shopOpentime": "9：30～18：00",
+        "shopHoliday": "年末年始（12/29～1/3）",
+        "kiboRoom": [],
+        "system": [],
+        "room": []
+    },
+    {
+        "madori": null,
+        "allCount": "2",
+        "bukkenCount": "517",
+        "roomCount": "0",
+        "bukkenImg": "https://chintai.sumai.ur-net.go.jp/chintai/img_photo/20/20_046/20_046_photo_s.jpg",
+        "pageIndex": "0",
+        "rowMax": "10",
+        "pageMax": "5",
+        "rentMin": null,
+        "rentMax": null,
+        "station": [
+            "2489",
+            "2922"
+        ],
+        "block": "kanto",
+        "tdfk": "tokyo",
+        "shisya": "20",
+        "danchi": "046",
+        "shikibetu": "0",
+        "danchiNm": "ひばりが丘",
+        "traffic": "西武池袋線｢ひばりヶ丘｣駅 徒歩18分 またはバス4分 徒歩3分<br>西武新宿線｢田無｣駅バス14分 徒歩3分",
+        "trafficpdf": "",
+        "place": "東久留米市ひばりが丘団地185",
+        "shikikin": "2か月",
+        "requirement": "ナシ",
+        "kouzou": "鉄筋コンクリート造",
+        "floorAll": "7",
+        "shopBlock": "kanto",
+        "shopTdfk": "tokyo",
+        "shopHtmlName": "hibarigaoka",
+        "shopName": "UR賃貸ショップひばりヶ丘",
+        "shopNum": "042-439-1301",
+        "shopOpentime": "9：30～18：00",
+        "shopHoliday": "水曜、年末年始（12/29～1/3）",
+        "kiboRoom": [],
+        "system": [],
+        "room": []
+    },
+    {
+        "madori": null,
+        "allCount": "2",
+        "bukkenCount": "517",
+        "roomCount": "0",
+        "bukkenImg": "https://chintai.sumai.ur-net.go.jp/chintai/img_photo/20/20_054/20_054_photo_s.jpg",
+        "pageIndex": "0",
+        "rowMax": "10",
+        "pageMax": "5",
+        "rentMin": null,
+        "rentMax": null,
+        "station": [
+            "1541",
+            "3171"
+        ],
+        "block": "kanto",
+        "tdfk": "tokyo",
+        "shisya": "20",
+        "danchi": "054",
+        "shikibetu": "1",
+        "danchiNm": "目白",
+        "traffic": "JR山手線「目白」駅 徒歩5分<br>JR山手線ほか「池袋」駅 徒歩9分",
+        "trafficpdf": "",
+        "place": "豊島区目白2-27-13",
+        "shikikin": "2か月",
+        "requirement": "ナシ",
+        "kouzou": "鉄筋コンクリート造",
+        "floorAll": "4",
+        "shopBlock": "kanto",
+        "shopTdfk": "tokyo",
+        "shopHtmlName": "ikebukuro",
+        "shopName": "UR池袋営業センター",
+        "shopNum": "03-3989-8171",
+        "shopOpentime": "9：30～18：00",
+        "shopHoliday": "水曜、年末年始（12/29～1/3）",
+        "kiboRoom": [],
+        "system": [],
+        "room": []
+    },
+    {
+        "madori": null,
+        "allCount": "2",
+        "bukkenCount": "517",
+        "roomCount": "0",
+        "bukkenImg": "https://chintai.sumai.ur-net.go.jp/chintai/img_photo/20/20_102/20_102_photo_s.jpg",
+        "pageIndex": "0",
+        "rowMax": "10",
+        "pageMax": "5",
+        "rentMin": null,
+        "rentMax": null,
+        "station": [
+            "1739",
+            "2018",
+            "3205"
+        ],
+        "block": "kanto",
+        "tdfk": "tokyo",
+        "shisya": "20",
+        "danchi": "102",
+        "shikibetu": "0",
+        "danchiNm": "南台",
+        "traffic": "西武多摩湖線「八坂」駅 徒歩14～16分<br>西武拝島線「小川」駅 徒歩15～18分<br>西武新宿線「久米川」駅バス5分 徒歩3～5分",
+        "trafficpdf": "20_1020_traffic.pdf",
+        "place": "東村山市富士見町1-14",
+        "shikikin": "2か月",
+        "requirement": "ナシ",
+        "kouzou": "鉄筋コンクリート造",
+        "floorAll": "5",
+        "shopBlock": "kanto",
+        "shopTdfk": "tokyo",
+        "shopHtmlName": "kumegawa",
+        "shopName": "UR賃貸ショップ久米川",
+        "shopNum": "042-396-8873",
+        "shopOpentime": "9：30～18：00",
+        "shopHoliday": "水曜、年末年始（12/29～1/3）",
+        "kiboRoom": [],
+        "system": [],
+        "room": []
+    },
+    {
+        "madori": null,
+        "allCount": "2",
+        "bukkenCount": "517",
+        "roomCount": "0",
+        "bukkenImg": "https://chintai.sumai.ur-net.go.jp/chintai/img_photo/20/20_117/20_117_photo_s.jpg",
+        "pageIndex": "0",
+        "rowMax": "10",
+        "pageMax": "5",
+        "rentMin": null,
+        "rentMax": null,
+        "station": [
+            "2473",
+            "3215"
+        ],
+        "block": "kanto",
+        "tdfk": "tokyo",
+        "shisya": "20",
+        "danchi": "117",
+        "shikibetu": "0",
+        "danchiNm": "花畑",
+        "traffic": "東武伊勢崎線「竹ノ塚」駅バス9～15分 徒歩2～8分<br>東武伊勢崎線「谷塚」駅 徒歩17～24分",
+        "trafficpdf": "20_1170_traffic.pdf",
+        "place": "足立区花畑5",
+        "shikikin": "2か月",
+        "requirement": "ナシ",
+        "kouzou": "鉄筋コンクリート造",
+        "floorAll": "8",
+        "shopBlock": "kanto",
+        "shopTdfk": "tokyo",
+        "shopHtmlName": "kitasenju",
+        "shopName": "UR賃貸ショップ北千住",
+        "shopNum": "03-5244-2877",
+        "shopOpentime": "9：30～18：00",
+        "shopHoliday": "水曜、年末年始（12/29～1/3）",
+        "kiboRoom": [],
+        "system": [],
+        "room": []
+    },
+    {
+        "madori": null,
+        "allCount": "2",
+        "bukkenCount": "517",
+        "roomCount": "0",
+        "bukkenImg": "https://chintai.sumai.ur-net.go.jp/chintai/img_photo/20/20_119/20_119_photo_s.jpg",
+        "pageIndex": "0",
+        "rowMax": "10",
+        "pageMax": "5",
+        "rentMin": null,
+        "rentMax": null,
+        "station": [
+            "2250"
+        ],
+        "block": "kanto",
+        "tdfk": "tokyo",
+        "shisya": "20",
+        "danchi": "119",
+        "shikibetu": "0",
+        "danchiNm": "志村一丁目",
+        "traffic": "都営三田線｢志村坂上｣駅 徒歩6分",
+        "trafficpdf": "",
+        "place": "板橋区志村1-1-2",
+        "shikikin": "2か月",
+        "requirement": "ナシ",
+        "kouzou": "鉄筋コンクリート造",
+        "floorAll": "7",
+        "shopBlock": "kanto",
+        "shopTdfk": "tokyo",
+        "shopHtmlName": "takashimadaira",
+        "shopName": "UR賃貸ショップ高島平",
+        "shopNum": "03-3550-4311",
+        "shopOpentime": "10：00～17：00",
+        "shopHoliday": "水曜、年末年始（12/29～1/3）",
+        "kiboRoom": [],
+        "system": [],
+        "room": []
+    },
+    {
+        "madori": null,
+        "allCount": "2",
+        "bukkenCount": "517",
+        "roomCount": "0",
+        "bukkenImg": "https://chintai.sumai.ur-net.go.jp/chintai/img_photo/20/20_129/20_129_photo_s.jpg",
+        "pageIndex": "0",
+        "rowMax": "10",
+        "pageMax": "5",
+        "rentMin": null,
+        "rentMax": null,
+        "station": [
+            "2112",
+            "2122",
+            "2916",
+            "3145"
+        ],
+        "block": "kanto",
+        "tdfk": "tokyo",
+        "shisya": "20",
+        "danchi": "129",
+        "shikibetu": "0",
+        "danchiNm": "小平",
+        "traffic": "西武多摩湖線「一橋学園」駅 徒歩11～19分<br>JR中央線「国分寺」駅バス13分 徒歩1～7分<br>西武新宿線「小平」駅バス6分 徒歩1～10分<br>JR中央線「武蔵小金井」駅バス15分 徒歩1～7分",
+        "trafficpdf": "20_1290_traffic.pdf",
+        "place": "小平市喜平町3",
+        "shikikin": "2か月",
+        "requirement": "ナシ",
+        "kouzou": "鉄筋コンクリート造",
+        "floorAll": "5",
+        "shopBlock": "kanto",
+        "shopTdfk": "tokyo",
+        "shopHtmlName": "kumegawa",
+        "shopName": "UR賃貸ショップ久米川",
+        "shopNum": "042-396-8873",
+        "shopOpentime": "9：30～18：00",
+        "shopHoliday": "水曜、年末年始（12/29～1/3）",
+        "kiboRoom": [],
+        "system": [],
+        "room": []
+    },
+    {
+        "madori": null,
+        "allCount": "2",
+        "bukkenCount": "517",
+        "roomCount": "0",
+        "bukkenImg": "https://chintai.sumai.ur-net.go.jp/chintai/img_photo/20/20_130/20_130_photo_s.jpg",
+        "pageIndex": "0",
+        "rowMax": "10",
+        "pageMax": "5",
+        "rentMin": null,
+        "rentMax": null,
+        "station": [
+            "1958",
+            "2473"
+        ],
+        "block": "kanto",
+        "tdfk": "tokyo",
+        "shisya": "20",
+        "danchi": "130",
+        "shikibetu": "0",
+        "danchiNm": "竹の塚第一",
+        "traffic": "東武伊勢崎線「竹ノ塚」駅 徒歩11～16分<br>東武伊勢崎線「竹ノ塚」駅バス2～3分 徒歩2～7分<br>JR常磐線「北千住」駅バス16～18分 徒歩1～5分",
+        "trafficpdf": "20_1300_traffic.pdf",
+        "place": "足立区竹の塚3-11ほか",
+        "shikikin": "2か月",
+        "requirement": "ナシ",
+        "kouzou": "鉄筋コンクリート造",
+        "floorAll": "10",
+        "shopBlock": "kanto",
+        "shopTdfk": "tokyo",
+        "shopHtmlName": "kitasenju",
+        "shopName": "UR賃貸ショップ北千住",
+        "shopNum": "03-5244-2877",
+        "shopOpentime": "9：30～18：00",
+        "shopHoliday": "水曜、年末年始（12/29～1/3）",
+        "kiboRoom": [],
+        "system": [],
+        "room": []
+    }
+]
+```
