@@ -21,7 +21,7 @@ export type TypeUrRoomPrice = {
   houseId: TypeUrHouseId // "40_3410"
   roomId: TypeUrRoomId // "000030306"
   timestamp: string
-  updatedTimestamp: string|null
+  updatedTimestamps: string[]
   rents: number[] // "102,400円"
   commonfee: number
 }

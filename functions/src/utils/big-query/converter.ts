@@ -113,7 +113,9 @@ const converter = {
           floor: targetRoom.floor,
 
           timestamp: info.timestamp,
-          updated_timestamp: info.updatedTimestamp,
+          updated: info.updatedTimestamps.map((timestamp) => ({
+            timestamp,
+          })),
 
           ...rentObj,
           commonfee: info.commonfee,

@@ -98,7 +98,7 @@ const convertUrArea = async ({
             houseId,
             roomId: room.roomId,
             timestamp,
-            updatedTimestamp: null,
+            updatedTimestamps: [],
             rents: convertRent(roomInfo.rent),
             commonfee: convertCommonfee(roomInfo.commonfee),
           });
@@ -239,11 +239,17 @@ const mergeRecords = (current: TypeUrRoomPrice[], prevDoc?: DocRecord) => {
       const targetPrev = prev.find((obj) => obj.houseId === currentRecord.houseId && obj.roomId === currentRecord.roomId);
 
       if (!targetPrev) {
-        records.push(currentRecord);
+        records.push({
+          ...currentRecord,
+          updatedTimestamps: [timestamp],
+        });
       } else {
         records.push({
           ...currentRecord,
-          updatedTimestamp: timestamp,
+          updatedTimestamps: [
+            ...targetPrev.updatedTimestamps,
+            timestamp,
+          ],
         });
       }
     }

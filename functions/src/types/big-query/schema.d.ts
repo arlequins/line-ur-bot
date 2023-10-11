@@ -29,7 +29,9 @@ export interface TableRoomRecords extends ProtoTableType {
   floor: string // "3階"
 
   timestamp: string
-  updated_timestamp: string|null
+  updated: {
+    timestamp: string
+  }[]
 
   low_rent: number // "102,400円"
   high_rent: number|null // "102,400円"
