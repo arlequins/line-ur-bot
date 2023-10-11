@@ -1,3 +1,4 @@
+import {logger} from "firebase-functions/v1";
 import {DocMasterHouse, DocRecord} from "../../types";
 import {
   TableMasterHouses,
@@ -123,6 +124,8 @@ const converter = {
         });
       }
     }
+
+    logger.debug(JSON.stringify(convertedForBigQueryRows));
 
     return convertedForBigQueryRows;
   },

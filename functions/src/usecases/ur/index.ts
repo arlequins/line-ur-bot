@@ -3,7 +3,7 @@ import {FIRESTORE_COLLECTION, FIRESTORE_COLLECTION_HISTORY, FIRESTORE_COLLECTION
 import {urAreaPrefs, targetHouseIds} from "../../constants/ur";
 import {fetchAreaList, fetchLeadTimeList, fetchRoomList} from "../../services/ur-api";
 import {TypeUrRoom, TypeUrRoomPrice, DocRecord, DocMasterHouse, TypeUrCrawlingData, TypeUrFilterRaw, TypeUrFilterRawRoom, DocHistoryRecent, DocHistoryLowcost, TypeUrFilterLowcost} from "../../types";
-import {currentDate, currentTimestamp} from "../../utils/date";
+import {currentDate, currentLocalTimestamp, currentTimestamp} from "../../utils/date";
 import {getDocument, setDocument} from "../../utils/db";
 import {objectEqualLength} from "../../utils";
 import {makeFirstMessage, makeFourthMessage, makeLowcostMessage, makeSecondMessage, makeTextMessage, makeThirdMessage} from "../../utils/line";
@@ -45,7 +45,7 @@ const convertUrArea = async ({
     return result;
   }
 
-  const timestamp = currentTimestamp();
+  const timestamp = currentLocalTimestamp();
 
   for (const obj of list) {
     const roomCount = obj.roomCount;
@@ -233,7 +233,7 @@ const mergeRecords = (current: TypeUrRoomPrice[], prevDoc?: DocRecord) => {
     current.forEach((record) => records.push(record));
   } else {
     const prev = prevDoc.data;
-    const timestamp = currentTimestamp();
+    const timestamp = currentLocalTimestamp();
 
     for (const currentRecord of current) {
       const targetPrev = prev.find((obj) => obj.houseId === currentRecord.houseId && obj.roomId === currentRecord.roomId);

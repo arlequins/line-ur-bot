@@ -4,7 +4,7 @@ export const masterHouses = [
   {name: "house_id", type: "STRING", mode: "REQUIRED"},
 
   // timestamp
-  {name: "sync_timestamp", type: "INTEGER"},
+  {name: "sync_timestamp", type: "STRING"},
 ];
 
 export const masterRooms = [
@@ -14,7 +14,7 @@ export const masterRooms = [
   {name: "room_id", type: "STRING", mode: "REQUIRED"},
 
   // timestamp
-  {name: "sync_timestamp", type: "INTEGER"},
+  {name: "sync_timestamp", type: "STRING"},
 ];
 
 export const roomRecords = [
@@ -40,5 +40,5 @@ export const roomRecords = [
   {name: "commonfee", type: "INTEGER", mode: "NULLABLE"},
 
   // timestamp
-  {name: "sync_timestamp", type: "INTEGER"},
+  {name: "sync_timestamp", type: "STRING"},
 ];

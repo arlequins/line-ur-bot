@@ -11,7 +11,6 @@ import {tableInfo} from "../../constants/big-query";
 import {DocMasterHouse, DocRecord} from "../../types";
 import {getDocument, getDocuments} from "../../utils/db";
 import {FIRESTORE_COLLECTION, FIRESTORE_COLLECTION_MASTER} from "../../constants/db";
-import {currentDate} from "../../utils/date";
 
 const makeTable = async (schema: PayloadCreateOrGetTable, isResetTable = false) => {
   try {
@@ -74,7 +73,7 @@ const transferTable = async (data: TypeConvertPayload) => {
   }
 };
 
-export const processTransferTable = async () => {
+export const processTransferTable = async (date: string) => {
   const payload = {
     masterHouses: [] as TableMasterHouses[],
     masterRooms: [] as TableMasterRooms[],
@@ -96,8 +95,6 @@ export const processTransferTable = async () => {
     collection: FIRESTORE_COLLECTION.MASTER,
     id: FIRESTORE_COLLECTION_MASTER.RECENT,
   });
-
-  const date = currentDate();
 
   const roomRecords = await getDocuments<DocRecord>({
     collection: FIRESTORE_COLLECTION.RECORDS,

@@ -3,6 +3,7 @@ import {processHistory, processLowcost} from "../usecases/ur";
 import lineApi from "../services/line";
 import {VALUES} from "../constants";
 import {processTransferTable} from "../usecases/big-query/transfer";
+import {currentDate} from "../utils/date";
 
 export const fetchUrData = async (): Promise<void> => {
   try {
@@ -41,10 +42,13 @@ export const fetchLowCost = async (): Promise<void> => {
 };
 
 export const transferBigQuery = async (): Promise<void> => {
+  const date = currentDate();
+
   try {
-    const result = await processTransferTable();
+    const result = await processTransferTable(date);
 
     logger.info({
+      date,
       count: {
         masterHouses: result.masterHouses.length,
         masterRooms: result.masterRooms.length,
