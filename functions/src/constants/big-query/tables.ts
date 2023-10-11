@@ -33,16 +33,16 @@ export const roomRecords = [
   {name: "floor", type: "STRING", mode: "NULLABLE"},
   {name: "timestamp", type: "STRING", mode: "NULLABLE"},
   {
-      "name": "updated",
-      "type": "RECORD",
-      "mode": "REPEATED",
-      "fields": [
-          {
-              "name": "timestamp",
-              "type": "STRING",
-              "mode": "NULLABLE"
-          }
-      ]
+    "name": "updated",
+    "type": "RECORD",
+    "mode": "REPEATED",
+    "fields": [
+      {
+        "name": "timestamp",
+        "type": "STRING",
+        "mode": "NULLABLE",
+      },
+    ],
   },
 
   {name: "low_rent", type: "INTEGER", mode: "NULLABLE"},
