@@ -10,7 +10,7 @@ export const DATE_FORMAT = "YYYY-MM-DD";
 export const DATETIME_FORMAT = "YYYY/MM/DD HH:mm";
 
 // api
-export const currentDatetime = () => dayjs().add(9, "hours").format("YYYY/MM/DD HH:mm");
+export const currentDatetime = () => dayjs().add(9, "hours").format(DATETIME_FORMAT);
 
 // batch
 export const day = () => dayjs().tz();
