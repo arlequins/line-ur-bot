@@ -12,11 +12,27 @@ import v1ApiHandler from "./controllers/v1/api";
 import * as v1BatchHandler from "./controllers/v1/batch";
 import {BATCH} from "./constants/batch";
 
+// api
 export const v1 = functions.region(ENV.REGION).https.onRequest(v1ApiHandler);
 
-export const batch = functions
+// batch
+export const batchFetchUrData = functions
   .region(ENV.REGION)
-  .runWith(BATCH.runWith.ur)
-  .pubsub.schedule(BATCH.schedule.ur)
+  .runWith(BATCH.runWith.fetchUrData)
+  .pubsub.schedule(BATCH.schedule.fetchUrData)
   .timeZone(ENV.TIMEZONE)
   .onRun(async () => await v1BatchHandler.fetchUrData());
+
+export const batchFetchLowCost = functions
+  .region(ENV.REGION)
+  .runWith(BATCH.runWith.fetchLowCost)
+  .pubsub.schedule(BATCH.schedule.fetchLowCost)
+  .timeZone(ENV.TIMEZONE)
+  .onRun(async () => await v1BatchHandler.fetchLowCost());
+
+export const batchTransferBigQuery = functions
+  .region(ENV.REGION)
+  .runWith(BATCH.runWith.transferBigQuery)
+  .pubsub.schedule(BATCH.schedule.transferBigQuery)
+  .timeZone(ENV.TIMEZONE)
+  .onRun(async () => await v1BatchHandler.transferBigQuery());

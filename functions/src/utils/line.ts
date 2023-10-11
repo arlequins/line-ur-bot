@@ -1,5 +1,5 @@
 import {FlexMessage, TextMessage} from "@line/bot-sdk";
-import {TypeUrFilterRaw} from "../types";
+import {TypeUrFilterLowcost, TypeUrFilterRaw} from "../types";
 import {UR_BASE_URL} from "../constants/ur";
 import {currentDatetime} from "./date";
 
@@ -78,7 +78,7 @@ export const makeSecondMessage = (
   for (const [index, house] of Object.entries(filteredUrData)) {
     const count = Number.parseInt(index) + 1;
     str += "---------------------------\n";
-    str += `${count}番目\n${house.name} - ${house.skcs}\n部屋${house.roomCount}個\n${convertRentsToYen(house.rents).join(", ")}${count !== filteredUrData.length ? "\n" : ""}`;
+    str += `${house.name} - ${house.skcs}\n部屋${house.roomCount}個\n${convertRentsToYen(house.rents).join(" | ")}${count !== filteredUrData.length ? "\n" : ""}`;
   }
 
   return str;
@@ -89,19 +89,17 @@ export const makeThirdMessage = (
 ): string => {
   let str = "部屋詳細情報\n";
 
-  for (const house of filteredUrData) {
+  for (const [index, house] of Object.entries(filteredUrData)) {
+    const count = Number.parseInt(index) + 1;
     str += "---------------------------\n";
     str += `${house.name} - ${house.skcs}\n`;
     const rooms = house.rooms.sort((a, b) => a.rents[0] - b.rents[0]);
 
     for (const [innerIndex, room] of Object.entries(rooms)) {
       const innerCount = Number.parseInt(innerIndex) + 1;
-      str += `${innerCount}番目 ${room.name}, ${room.type}, ${room.floor} - ${convertRentsToYen(room.rents).join("~")}\n`;
+      str += `${room.name}, ${room.type}, ${room.floor} - ${convertRentsToYen(room.rents).join("~")}${!(count === filteredUrData.length && innerCount === rooms.length) ? "\n" : ""}`;
     }
   }
-
-  str += "---------------------------\n";
-  str += "次のメッセージは最安値の物件のリンクです。";
 
   return str;
 };
@@ -114,6 +112,27 @@ export const makeFourthMessage = (
   const lowTargetHouse = filteredUrData.sort((a, b) => a.lowRent - b.lowRent)[0];
 
   str += `${UR_BASE_URL}${lowTargetHouse.url}`;
+
+  return str;
+};
+
+export const makeLowcostMessage = (
+  filterList: TypeUrFilterLowcost[],
+): string => {
+  const lowHouse = filterList[0];
+  let str = `最安値：${convertRentsToYen(lowHouse.lowRents).join("~")}\n`;
+  str += `全体対象物件：${filterList.length}件\n`;
+
+  for (const [index, house] of Object.entries(filterList)) {
+    const count = Number.parseInt(index) + 1;
+    str += "---------------------------\n";
+    str += `${house.name} - 部屋${house.roomCount}個\n`;
+
+    for (const [innerIndex, room] of Object.entries(house.rooms)) {
+      const innerCount = Number.parseInt(innerIndex) + 1;
+      str += `${room.name}, ${room.type}, ${room.floor} - ${convertRentsToYen(room.rents).join("~")}${!(count === filterList.length && innerCount === house.rooms.length) ? "\n" : ""}`;
+    }
+  }
 
   return str;
 };

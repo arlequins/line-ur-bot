@@ -1,6 +1,7 @@
 export enum ENV {
   REGION = "asia-northeast1",
-  TIMEZONE = "Asia/Tokyo"
+  TIMEZONE = "Asia/Tokyo",
+  BIGQUERY_DATASET_NAME = "ur_archives",
 }
 
 const setValues = () => {
@@ -27,5 +28,12 @@ const setValues = () => {
 export const VALUES = setValues();
 
 export const OPTIONS = {
-  RentHigh: "100000",
+  history: {
+    rentHigh: "100000",
+  },
+  lowcost: {
+    year: 25,
+    rentHigh: 90000,
+    rooms: ["1R,1K", "1DK", "1LDK", "2DK"],
+  },
 };

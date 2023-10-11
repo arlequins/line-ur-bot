@@ -1,14 +1,14 @@
 import {OPTIONS} from "../../constants";
 import {FIRESTORE_COLLECTION, FIRESTORE_COLLECTION_HISTORY, FIRESTORE_COLLECTION_MASTER} from "../../constants/db";
 import {urAreaPrefs, targetHouseIds} from "../../constants/ur";
-import {fetchAreaList, fetchRoomList} from "../../services/ur-api";
-import {ResponseUrHouse, TypeUrRoom, TypeUrRoomPrice, ResponseUrRoom, DocRecord, DocMasterHouse, TypeUrCrawlingData, TypeUrFilterRaw, TypeUrFilterRawRoom, DocHistory} from "../../types";
-import {currentTimestamp} from "../../utils/date";
+import {fetchAreaList, fetchLeadTimeList, fetchRoomList} from "../../services/ur-api";
+import {TypeUrRoom, TypeUrRoomPrice, DocRecord, DocMasterHouse, TypeUrCrawlingData, TypeUrFilterRaw, TypeUrFilterRawRoom, DocHistoryRecent, DocHistoryLowcost, TypeUrFilterLowcost} from "../../types";
+import {currentDate, currentLocalTimestamp, currentTimestamp} from "../../utils/date";
 import {getDocument, setDocument} from "../../utils/db";
-import {saveBatchCommit} from "../db";
 import {objectEqualLength} from "../../utils";
-import {makeFirstMessage, makeFourthMessage, makeSecondMessage, makeTextMessage, makeThirdMessage} from "../../utils/line";
+import {makeFirstMessage, makeFourthMessage, makeLowcostMessage, makeSecondMessage, makeTextMessage, makeThirdMessage} from "../../utils/line";
 import {Message} from "@line/bot-sdk";
+import {ResponseLeadTime, ResponseUrHouse, ResponseUrRoom} from "../../types/api";
 
 const defaultParseError = (num:number) => Number.isInteger(num) ? num : -1;
 const deleteYen = (str: string) => str.replace("円", "").replaceAll(",", "");
@@ -45,7 +45,7 @@ const convertUrArea = async ({
     return result;
   }
 
-  const timestamp = currentTimestamp();
+  const timestamp = currentLocalTimestamp();
 
   for (const obj of list) {
     const roomCount = obj.roomCount;
@@ -71,7 +71,7 @@ const convertUrArea = async ({
     if (roomCount > 0 && targetHouseIds.includes(houseId)) {
       const roomList = await fetchRoomList<ResponseUrRoom[]>({
         rent_low: "",
-        rent_high: OPTIONS.RentHigh,
+        rent_high: OPTIONS.history.rentHigh,
         floorspace_low: "",
         floorspace_high: "",
         mode: "init",
@@ -98,6 +98,7 @@ const convertUrArea = async ({
             houseId,
             roomId: room.roomId,
             timestamp,
+            updatedTimestamp: null,
             rents: convertRent(roomInfo.rent),
             commonfee: convertCommonfee(roomInfo.commonfee),
           });
@@ -141,7 +142,7 @@ export const pullUrData = async (): Promise<TypeUrCrawlingData> => {
       rooms: [],
       roomPrices: [],
     } as DocMasterHouse,
-    records: [] as DocRecord[],
+    records: [] as TypeUrRoomPrice[],
   };
 
   for (const pref of urAreaPrefs) {
@@ -166,10 +167,7 @@ export const pullUrData = async (): Promise<TypeUrCrawlingData> => {
       resultArea.rooms.forEach((obj) => result.master.rooms.push(obj));
       resultArea.roomPrices.forEach((obj) => {
         result.master.roomPrices.push(obj);
-        result.records.push({
-          docId: `${obj.houseId}_${obj.roomId}`,
-          data: obj,
-        });
+        result.records.push(obj);
       });
     }
   }
@@ -228,6 +226,32 @@ export const filterUrData = ({master: urData}: TypeUrCrawlingData): TypeUrFilter
   return results;
 };
 
+const mergeRecords = (current: TypeUrRoomPrice[], prevDoc?: DocRecord) => {
+  const records: TypeUrRoomPrice[] = [];
+
+  if (!prevDoc) {
+    current.forEach((record) => records.push(record));
+  } else {
+    const prev = prevDoc.data;
+    const timestamp = currentLocalTimestamp();
+
+    for (const currentRecord of current) {
+      const targetPrev = prev.find((obj) => obj.houseId === currentRecord.houseId && obj.roomId === currentRecord.roomId);
+
+      if (!targetPrev) {
+        records.push(currentRecord);
+      } else {
+        records.push({
+          ...currentRecord,
+          updatedTimestamp: timestamp,
+        });
+      }
+    }
+  }
+
+  return records;
+};
+
 export const processHistory = async (isOverride = false) => {
   const result = {
     messages: [] as Message[],
@@ -244,16 +268,29 @@ export const processHistory = async (isOverride = false) => {
   });
 
   // update records collection
-  await saveBatchCommit<TypeUrRoomPrice, DocRecord>(
-    FIRESTORE_COLLECTION.RECORDS,
-    urData.records
-  );
+  const date = currentDate();
+
+  const prevRecords = await getDocument<DocRecord>({
+    collection: FIRESTORE_COLLECTION.RECORDS,
+    id: date,
+  });
+
+  const targetRecords = mergeRecords(urData.records, prevRecords);
+
+  await setDocument<DocRecord>({
+    collection: FIRESTORE_COLLECTION.RECORDS,
+    id: date,
+    data: {
+      date,
+      data: targetRecords,
+    },
+  });
 
   // push messages
   const filteredUrData = filterUrData(urData);
 
   // compare previous push
-  const recentHistory = await getDocument<DocHistory>({
+  const recentHistory = await getDocument<DocHistoryRecent>({
     collection: FIRESTORE_COLLECTION.HISTORY,
     id: FIRESTORE_COLLECTION_HISTORY.RECENT,
   });
@@ -261,7 +298,7 @@ export const processHistory = async (isOverride = false) => {
   result.isNotSameStatus = !recentHistory || (recentHistory && !objectEqualLength(recentHistory.data, filteredUrData));
 
   if (isOverride || result.isNotSameStatus) {
-    await setDocument<DocHistory>({
+    await setDocument<DocHistoryRecent>({
       collection: FIRESTORE_COLLECTION.HISTORY,
       id: FIRESTORE_COLLECTION_HISTORY.RECENT,
       data: {
@@ -275,6 +312,94 @@ export const processHistory = async (isOverride = false) => {
       makeTextMessage(makeSecondMessage(filteredUrData)),
       makeTextMessage(makeThirdMessage(filteredUrData)),
       makeTextMessage(makeFourthMessage(filteredUrData)),
+    ];
+  }
+
+  return result;
+};
+
+const filterLowcostList = (rawList: ResponseLeadTime[]) => {
+  const list: TypeUrFilterLowcost[] = [];
+
+  for (const raw of rawList) {
+    const rooms = raw.room.map((room) => ({
+      roomId: room.id,
+      rents: convertRent(room.rent),
+      commonfee: convertRentfee(room.commonfee),
+      name: `${room.roomNmMain} ${room.roomNmSub}`,
+      type: room.type, // "2DK";
+      floorspace: room.floorspace, // "50&#13217;";
+      floor: room.floor, // "1階";
+    })).sort((a, b) => a.rents[0] - b.rents[0]);
+
+    if (!rooms.length) {
+      continue;
+    }
+
+    const lowHouse = rooms[0];
+
+    list.push({
+      houseId: `${raw.shisya}_${raw.danchi}${raw.shikibetu}`,
+      name: `${raw.danchiNm}`, // "コンフォール柏豊四季台";
+      tdfk: `${raw.tdfk}`, // "chiba";
+      roomCount: Number.parseInt(raw.roomCount, 10),
+      rooms: rooms,
+      lowRents: lowHouse.rents,
+      lowCommonfee: lowHouse.commonfee,
+    });
+  }
+
+  return list.filter((house) => house.roomCount).sort((a, b) => a.lowRents[0] - b.lowRents[0]);
+};
+
+export const processLowcost = async () => {
+  const result = {
+    messages: [] as Message[],
+    isNotSameStatus: false,
+  };
+
+  const list = await fetchLeadTimeList<ResponseLeadTime[]>();
+
+  if (!list) {
+    result.messages = [
+      makeTextMessage("確認中エラーが発生しました。\n再度リクエストしてください。"),
+    ];
+    return result;
+  }
+
+  const filterList = filterLowcostList(list);
+
+  if (!filterList.length) {
+    result.messages = [
+      makeTextMessage("条件に合う物件がないです。"),
+    ];
+    return result;
+  }
+
+  // compare previous push
+  const historyLowcost = await getDocument<DocHistoryLowcost>({
+    collection: FIRESTORE_COLLECTION.HISTORY,
+    id: FIRESTORE_COLLECTION_HISTORY.LOWCOST,
+  });
+
+  result.isNotSameStatus = !historyLowcost || (historyLowcost && !objectEqualLength(historyLowcost.data, filterList));
+
+  if (result.isNotSameStatus) {
+    await setDocument<DocHistoryLowcost>({
+      collection: FIRESTORE_COLLECTION.HISTORY,
+      id: FIRESTORE_COLLECTION_HISTORY.LOWCOST,
+      data: {
+        data: filterList,
+        timestamp: currentTimestamp(),
+      },
+    });
+
+    result.messages = [
+      makeTextMessage(makeLowcostMessage(filterList)),
+    ];
+  } else {
+    result.messages = [
+      makeTextMessage("前回と同じです。"),
     ];
   }
 

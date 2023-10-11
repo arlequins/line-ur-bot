@@ -1,5 +1,5 @@
 {
-  "version": "0.0.1",
+  "version": "0.0.2",
   "name": "functions",
   "scripts": {
     "lint": "eslint --ext .js,.ts . --fix",
@@ -16,6 +16,7 @@
   },
   "main": "lib/index.js",
   "dependencies": {
+    "@google-cloud/bigquery": "^7.3.0",
     "@line/bot-sdk": "^7.7.0",
     "axios": "^1.5.1",
     "dayjs": "^1.11.10",

@@ -6,7 +6,33 @@ export const fetchUrData = async (): Promise<void> => {
     await batchUsecases.fetchUrData();
 
     logger.info({
-      message: "fetchUrData Success",
+      message: "fetchUrData success",
+      status: 200,
+    });
+  } catch (error) {
+    logger.error(error);
+  }
+};
+
+export const fetchLowCost = async (): Promise<void> => {
+  try {
+    await batchUsecases.fetchLowCost();
+
+    logger.info({
+      message: "fetchLowCost success",
+      status: 200,
+    });
+  } catch (error) {
+    logger.error(error);
+  }
+};
+
+export const transferBigQuery = async (): Promise<void> => {
+  try {
+    await batchUsecases.transferBigQuery();
+
+    logger.info({
+      message: "transferBigQuery success",
       status: 200,
     });
   } catch (error) {
