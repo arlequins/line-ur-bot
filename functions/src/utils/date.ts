@@ -13,7 +13,7 @@ export const DATETIME_FORMAT = "YYYY/MM/DD HH:mm";
 export const currentDatetime = () => dayjs().add(9, "hours").format("YYYY/MM/DD HH:mm");
 
 // batch
-export const day = () => dayjs().tz(tz);
-export const currentTimestamp = () => dayjs().tz(tz).format();
-export const currentLocalTimestamp = () => dayjs().tz(tz).format();
-export const currentDate = () => dayjs().tz(tz).format(DATE_FORMAT);
+export const day = () => dayjs().tz();
+export const currentTimestamp = () => dayjs().tz().format();
+export const currentLocalTimestamp = () => dayjs().tz().format();
+export const currentDate = () => dayjs().tz().format(DATE_FORMAT);
