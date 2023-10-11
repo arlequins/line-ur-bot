@@ -2,6 +2,8 @@
 
 ## install
 ```
+npx firebase-tools login
+npx firebase-tools use {project_name}
 npx firebase-tools init
 ```
 

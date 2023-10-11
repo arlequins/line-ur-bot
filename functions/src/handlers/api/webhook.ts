@@ -1,17 +1,21 @@
 import {Request, Response} from "firebase-functions";
 import * as logger from "firebase-functions/logger";
 import {Message, WebhookEvent, WebhookRequestBody} from "@line/bot-sdk";
-import lineApi from "../services/line";
-import {makeTextMessage} from "../utils/line";
-import {processHistory} from "../usecases/ur";
-import {VALUES} from "../constants";
+import lineApi from "../../services/line";
+import {makeTextMessage} from "../../utils/line";
+import {processHistory, processLowcost} from "../../usecases/ur";
+import {VALUES} from "../../constants";
 
 const enum TRIGGER {
   UR_STATUS = "確認",
   UR_FORCE_STATUS = "更新",
+  UR_LOWEST_PRICE = "最安値",
 }
 
-const targetTextList: string[] = [TRIGGER.UR_STATUS, TRIGGER.UR_FORCE_STATUS];
+const targetTextList: string[] = [
+  TRIGGER.UR_STATUS, TRIGGER.UR_FORCE_STATUS,
+  TRIGGER.UR_LOWEST_PRICE,
+];
 
 const setProcessResultText = (
   messagesLength: number,
@@ -58,25 +62,33 @@ const processEvent = async (event: WebhookEvent) => {
       !result.messages.length && event.message.type === "text" &&
       targetTextList.includes(event.message.text)
     ) {
-      const isForceUpdate = event.message.text === TRIGGER.UR_FORCE_STATUS;
-      const history = await processHistory(isForceUpdate);
-      const processResultText = setProcessResultText(
-        history.messages.length,
-        isForceUpdate,
-        history.isNotSameStatus
-      );
+      if (event.message.text === TRIGGER.UR_LOWEST_PRICE) {
+        const lowcost = await processLowcost();
 
-      result.messages = [
-        ...history.messages,
-        makeTextMessage(processResultText),
-      ];
+        result.messages = [
+          ...lowcost.messages,
+        ];
+      } else {
+        const isForceUpdate = event.message.text === TRIGGER.UR_FORCE_STATUS;
+        const history = await processHistory(isForceUpdate);
+        const processResultText = setProcessResultText(
+          history.messages.length,
+          isForceUpdate,
+          history.isNotSameStatus
+        );
+
+        result.messages = [
+          ...history.messages,
+          makeTextMessage(processResultText),
+        ];
+      }
     }
 
     // processing exceptions
     if (!result.messages.length) {
       result.messages = [
         makeTextMessage(
-          "認識できません。\nUR空室確認は、\n「確認」および「更新」を入力してください。"
+          "認識できません。\nUR空室確認は、\n「確認」、「更新」、「最安値」を入力してください。"
         ),
       ];
     }
