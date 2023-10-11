@@ -32,11 +32,10 @@ export type TypeConvertPayload =
   | TypeRoomRecords;
 
 const converter = {
-  masterHouses: (_list: DocMasterHouse): TableMasterHouses[] => {
-    // const syncTimestamp = day().valueOf();
-    // const identifier = currentDate();
+  masterHouses: (_doc: DocMasterHouse): TableMasterHouses[] => {
     const convertedForBigQueryRows = [] as TableMasterHouses[];
 
+    // TODO: make master data
     // for (const obj of list.houses) {
     //   convertedForBigQueryRows.push({
     //     identifier,
@@ -49,11 +48,10 @@ const converter = {
 
     return convertedForBigQueryRows;
   },
-  masterRooms: (_list: DocMasterHouse[]): TableMasterRooms[] => {
-    // const syncTimestamp = day().valueOf();
-    // const identifier = currentDate();
+  masterRooms: (_doc: DocMasterHouse): TableMasterRooms[] => {
     const convertedForBigQueryRows = [] as TableMasterRooms[];
 
+    // TODO: make master data
     // for (const obj of list) {
     //   convertedForBigQueryRows.push({
     //     identifier,

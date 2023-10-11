@@ -80,6 +80,18 @@ export const processTransferTable = async (date: string) => {
     roomRecords: [] as TableRoomRecords[],
   };
 
+  const masterHouse = await getDocument<DocMasterHouse>({
+    collection: FIRESTORE_COLLECTION.MASTER,
+    id: FIRESTORE_COLLECTION_MASTER.RECENT,
+  });
+
+  if (!masterHouse) {
+    return payload;
+  }
+
+  payload.masterHouses = converter.masterHouses(masterHouse);
+  payload.masterRooms = converter.masterRooms(masterHouse);
+
   await transferTable({
     type: "masterHouses",
     rows: payload.masterHouses,
@@ -91,11 +103,6 @@ export const processTransferTable = async (date: string) => {
   });
 
   // process roomRecords
-  const masterHouse = await getDocument<DocMasterHouse>({
-    collection: FIRESTORE_COLLECTION.MASTER,
-    id: FIRESTORE_COLLECTION_MASTER.RECENT,
-  });
-
   const roomRecords = await getDocuments<DocRecord>({
     collection: FIRESTORE_COLLECTION.RECORDS,
     date,
