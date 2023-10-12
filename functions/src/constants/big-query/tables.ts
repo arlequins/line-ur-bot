@@ -38,7 +38,12 @@ export const roomRecords = [
     "mode": "REPEATED",
     "fields": [
       {
-        "name": "timestamp",
+        "name": "from",
+        "type": "STRING",
+        "mode": "NULLABLE",
+      },
+      {
+        "name": "to",
         "type": "STRING",
         "mode": "NULLABLE",
       },

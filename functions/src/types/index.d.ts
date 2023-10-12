@@ -17,11 +17,16 @@ export type TypeUrRoom = {
   madori: string
 }
 
+export type TypeUrRoomPriceUpdatedTimestamp = {
+  from: string
+  to: string|null
+}
+
 export type TypeUrRoomPrice = {
   houseId: TypeUrHouseId // "40_3410"
   roomId: TypeUrRoomId // "000030306"
   timestamp: string
-  updatedTimestamps: string[]
+  updatedTimestamps?: string[]
   rents: number[] // "102,400円"
   commonfee: number
 }

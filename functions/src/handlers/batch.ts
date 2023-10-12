@@ -3,7 +3,7 @@ import {processHistory, processLowcost} from "../usecases/ur";
 import lineApi from "../services/line";
 import {VALUES} from "../constants";
 import {processTransferTable} from "../usecases/big-query/transfer";
-import {currentDate} from "../utils/date";
+import {DATE_FORMAT, day} from "../utils/date";
 
 export const fetchUrData = async (): Promise<void> => {
   try {
@@ -42,7 +42,7 @@ export const fetchLowCost = async (): Promise<void> => {
 };
 
 export const transferBigQuery = async (): Promise<void> => {
-  const date = currentDate();
+  const date = day().subtract(1, "day").format(DATE_FORMAT);
 
   try {
     const result = await processTransferTable(date);
