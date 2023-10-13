@@ -5,7 +5,7 @@ import {
   TableMasterRooms,
   TableRoomRecords,
 } from "../../types/big-query/schema";
-import {currentDate, currentTimestamp, setDay} from "../date";
+import {currentTimestamp, setDay} from "../date";
 import {Dayjs} from "dayjs";
 
 export type ConvertKey = "masterHouses" | "masterRooms" | "roomRecords";
@@ -51,6 +51,13 @@ const convertUpdated = (
     const index = Number.parseInt(rawIndex, 10);
     const current = setDay(timestamp);
 
+    logger.debug({
+      type: 'inner',
+      index,
+      current,
+      timestamp,
+    })
+
     if (index === 0) {
       result.from = current;
 
@@ -85,6 +92,11 @@ const convertUpdated = (
       }
     }
   }
+
+  logger.debug({
+    type: 'last',
+    result: result.updatedTimestamps,
+  })
 
   return result.updatedTimestamps;
 };
@@ -123,11 +135,11 @@ const converter = {
     return convertedForBigQueryRows;
   },
   roomRecords: (
+    date: string,
     masterHouse: DocMasterHouse,
     roomRecords: DocRecord[]
   ): TableRoomRecords[] => {
     const syncTimestamp = currentTimestamp();
-    const identifier = currentDate();
     const convertedForBigQueryRows = [] as TableRoomRecords[];
 
     for (const obj of roomRecords) {
@@ -158,7 +170,7 @@ const converter = {
             };
 
         convertedForBigQueryRows.push({
-          identifier,
+          identifier: date,
 
           house_id: info.houseId,
           room_id: info.roomId,
@@ -170,7 +182,7 @@ const converter = {
 
           room_name: targetRoom.name,
           type: targetRoom.type,
-          floorspace: targetRoom.floorspace,
+          floorspace: targetRoom.floorspace.replace('&#13217;', '㎡'),
           floor: targetRoom.floor,
 
           timestamp: info.timestamp,

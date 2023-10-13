@@ -112,7 +112,7 @@ export const processTransferTable = async (date: string) => {
     return payload;
   }
 
-  payload.roomRecords = converter.roomRecords(masterHouse, roomRecords);
+  payload.roomRecords = converter.roomRecords(date, masterHouse, roomRecords);
 
   await transferTable({
     type: "roomRecords",
