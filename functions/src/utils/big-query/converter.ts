@@ -1,4 +1,3 @@
-import {logger} from "firebase-functions/v1";
 import {DocMasterHouse, DocRecord, TypeUrRoomPriceUpdatedTimestamp} from "../../types";
 import {
   TableMasterHouses,
@@ -43,20 +42,13 @@ const convertUpdated = (
     from: null,
   };
 
-  if (!allUpdatedTimestamps || allUpdatedTimestamps?.length) {
+  if (!allUpdatedTimestamps || !allUpdatedTimestamps?.length) {
     return result.updatedTimestamps;
   }
 
   for (const [rawIndex, timestamp] of Object.entries(allUpdatedTimestamps)) {
     const index = Number.parseInt(rawIndex, 10);
     const current = setDay(timestamp);
-
-    logger.debug({
-      type: 'inner',
-      index,
-      current,
-      timestamp,
-    })
 
     if (index === 0) {
       result.from = current;
@@ -77,8 +69,8 @@ const convertUpdated = (
         const diff = current.diff(lastTimestamp.from, "minute");
 
         // over 1 hour
-        if (diff > 60) {
-          const guessEndTimestamp = current.subtract(30, "minutes");
+        if (diff > 120) {
+          const guessEndTimestamp = current.subtract(90, "minutes");
 
           result.updatedTimestamps[result.updatedTimestamps.length - 1].to = guessEndTimestamp.format();
           result.updatedTimestamps = [
@@ -92,11 +84,6 @@ const convertUpdated = (
       }
     }
   }
-
-  logger.debug({
-    type: 'last',
-    result: result.updatedTimestamps,
-  })
 
   return result.updatedTimestamps;
 };
@@ -182,7 +169,7 @@ const converter = {
 
           room_name: targetRoom.name,
           type: targetRoom.type,
-          floorspace: targetRoom.floorspace.replace('&#13217;', '㎡'),
+          floorspace: targetRoom.floorspace.replace("&#13217;", "㎡"),
           floor: targetRoom.floor,
 
           timestamp: info.timestamp,
@@ -194,8 +181,6 @@ const converter = {
         });
       }
     }
-
-    logger.debug(JSON.stringify(convertedForBigQueryRows));
 
     return convertedForBigQueryRows;
   },
