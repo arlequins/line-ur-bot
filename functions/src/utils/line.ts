@@ -1,7 +1,6 @@
-import {FlexMessage, TextMessage} from "@line/bot-sdk";
+import {TextMessage} from "@line/bot-sdk";
 import {TypeUrFilterLowcost, TypeUrFilterRaw} from "../types";
 import {UR_BASE_URL} from "../constants/ur";
-import {currentDatetime} from "./date";
 
 const convertRentToYen = (rent: number) => `${rent.toLocaleString("ja-JP")}円`;
 const convertRentsToYen = (rents: number[]) => rents.map((rent) => convertRentToYen(rent));
@@ -11,66 +10,7 @@ export const makeTextMessage = (msg: string): TextMessage => ({
   text: msg,
 });
 
-export const makeFirstMessage = (
-  filteredUrData: TypeUrFilterRaw[],
-): FlexMessage => {
-  const lowCostHouse = filteredUrData.sort((a, b) => (a.lowRent - b.lowRent))[0];
-  return {
-    type: "flex",
-    altText: `現在${filteredUrData.length}個の物件に空室あり`,
-    contents: {
-      type: "bubble",
-      body: {
-        type: "box",
-        layout: "vertical",
-        contents: [
-          {
-            type: "text",
-            text: `${currentDatetime()} 状況`,
-            weight: "bold",
-            size: "xl",
-          },
-          {
-            type: "text",
-            text: `現在${filteredUrData.length}個の物件に空室あり`,
-            weight: "regular",
-            size: "xl",
-          },
-          {
-            type: "box",
-            layout: "vertical",
-            margin: "lg",
-            spacing: "sm",
-            contents: [{
-              type: "box",
-              layout: "baseline",
-              spacing: "sm",
-              contents: [
-                {
-                  type: "text",
-                  text: "最安い物件",
-                  color: "#aaaaaa",
-                  size: "sm",
-                  flex: 1,
-                },
-                {
-                  type: "text",
-                  text: `${lowCostHouse.name}\n${lowCostHouse.skcs}\n部屋${lowCostHouse.roomCount}個\n${convertRentsToYen(lowCostHouse.rents).join("\n")}`,
-                  wrap: true,
-                  color: "#666666",
-                  size: "sm",
-                  flex: 2,
-                },
-              ],
-            }],
-          },
-        ],
-      },
-    },
-  };
-};
-
-export const makeSecondMessage = (
+export const makeHistoryFirstMessage = (
   filteredUrData: TypeUrFilterRaw[],
 ): string => {
   let str = `物件情報：${filteredUrData.length}件\n`;
@@ -84,7 +24,7 @@ export const makeSecondMessage = (
   return str;
 };
 
-export const makeThirdMessage = (
+export const makeHistorySecondMessage = (
   filteredUrData: TypeUrFilterRaw[],
 ): string => {
   let str = "部屋詳細情報\n";
@@ -104,14 +44,16 @@ export const makeThirdMessage = (
   return str;
 };
 
-export const makeFourthMessage = (
+export const makeLinkMessage = (
   filteredUrData: TypeUrFilterRaw[],
 ): string => {
   let str = "";
 
-  const lowTargetHouse = filteredUrData.sort((a, b) => a.lowRent - b.lowRent)[0];
+  const lowTargetHouses = filteredUrData.sort((a, b) => a.lowRent - b.lowRent);
 
-  str += `${UR_BASE_URL}${lowTargetHouse.url}`;
+  for (const lowTargetHouse of lowTargetHouses) {
+    str += `${UR_BASE_URL}${lowTargetHouse.url}`;
+  }
 
   return str;
 };
