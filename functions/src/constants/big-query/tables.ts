@@ -32,7 +32,23 @@ export const roomRecords = [
   {name: "floorspace", type: "STRING", mode: "NULLABLE"},
   {name: "floor", type: "STRING", mode: "NULLABLE"},
   {name: "timestamp", type: "STRING", mode: "NULLABLE"},
-  {name: "updated_timestamp", type: "STRING", mode: "NULLABLE"},
+  {
+    "name": "updated",
+    "type": "RECORD",
+    "mode": "REPEATED",
+    "fields": [
+      {
+        "name": "from",
+        "type": "STRING",
+        "mode": "NULLABLE",
+      },
+      {
+        "name": "to",
+        "type": "STRING",
+        "mode": "NULLABLE",
+      },
+    ],
+  },
 
   {name: "low_rent", type: "INTEGER", mode: "NULLABLE"},
   {name: "high_rent", type: "INTEGER", mode: "NULLABLE"},

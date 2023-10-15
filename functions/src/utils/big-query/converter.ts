@@ -1,11 +1,11 @@
-import {logger} from "firebase-functions/v1";
-import {DocMasterHouse, DocRecord} from "../../types";
+import {DocMasterHouse, DocRecord, TypeUrRoomPriceUpdatedTimestamp} from "../../types";
 import {
   TableMasterHouses,
   TableMasterRooms,
   TableRoomRecords,
 } from "../../types/big-query/schema";
-import {currentDate, currentTimestamp} from "../date";
+import {currentTimestamp, setDay} from "../date";
+import {Dayjs} from "dayjs";
 
 export type ConvertKey = "masterHouses" | "masterRooms" | "roomRecords";
 
@@ -30,6 +30,63 @@ export type TypeConvertPayload =
   | TypeConvertHouses
   | TypeConvertRooms
   | TypeRoomRecords;
+
+const convertUpdated = (
+  allUpdatedTimestamps?: string[],
+) => {
+  const result: {
+    updatedTimestamps: TypeUrRoomPriceUpdatedTimestamp[],
+    from: Dayjs|null
+  } = {
+    updatedTimestamps: [],
+    from: null,
+  };
+
+  if (!allUpdatedTimestamps || !allUpdatedTimestamps?.length) {
+    return result.updatedTimestamps;
+  }
+
+  for (const [rawIndex, timestamp] of Object.entries(allUpdatedTimestamps)) {
+    const index = Number.parseInt(rawIndex, 10);
+    const current = setDay(timestamp);
+
+    if (index === 0) {
+      result.from = current;
+
+      result.updatedTimestamps = [{
+        from: timestamp,
+        to: null,
+      }];
+    }
+
+    if (result.from) {
+      const lastTimestamp = result.updatedTimestamps[result.updatedTimestamps.length - 1];
+
+      // day of last timestamp
+      if (index === allUpdatedTimestamps.length - 1) {
+        result.updatedTimestamps[result.updatedTimestamps.length - 1].to = current.format();
+      } else {
+        const diff = current.diff(lastTimestamp.from, "minute");
+
+        // over 1 hour
+        if (diff > 120) {
+          const guessEndTimestamp = current.subtract(90, "minutes");
+
+          result.updatedTimestamps[result.updatedTimestamps.length - 1].to = guessEndTimestamp.format();
+          result.updatedTimestamps = [
+            ...result.updatedTimestamps,
+            {
+              from: current.format(),
+              to: null,
+            },
+          ];
+        }
+      }
+    }
+  }
+
+  return result.updatedTimestamps;
+};
 
 const converter = {
   masterHouses: (_doc: DocMasterHouse): TableMasterHouses[] => {
@@ -65,11 +122,11 @@ const converter = {
     return convertedForBigQueryRows;
   },
   roomRecords: (
+    date: string,
     masterHouse: DocMasterHouse,
     roomRecords: DocRecord[]
   ): TableRoomRecords[] => {
     const syncTimestamp = currentTimestamp();
-    const identifier = currentDate();
     const convertedForBigQueryRows = [] as TableRoomRecords[];
 
     for (const obj of roomRecords) {
@@ -88,16 +145,19 @@ const converter = {
           continue;
         }
 
-        const rentObj = info.rents.length && info.rents.length === 2 ? {
-          low_rent: info.rents[0],
-          high_rent: info.rents[1],
-        } : {
-          low_rent: info.rents[0],
-          high_rent: null,
-        };
+        const rentObj =
+          info.rents.length && info.rents.length === 2 ?
+            {
+              low_rent: info.rents[0],
+              high_rent: info.rents[1],
+            } :
+            {
+              low_rent: info.rents[0],
+              high_rent: null,
+            };
 
         convertedForBigQueryRows.push({
-          identifier,
+          identifier: date,
 
           house_id: info.houseId,
           room_id: info.roomId,
@@ -109,12 +169,11 @@ const converter = {
 
           room_name: targetRoom.name,
           type: targetRoom.type,
-          floorspace: targetRoom.floorspace,
+          floorspace: targetRoom.floorspace.replace("&#13217;", "㎡"),
           floor: targetRoom.floor,
 
           timestamp: info.timestamp,
-          updated_timestamp: info.updatedTimestamp,
-
+          updated: convertUpdated(info.updatedTimestamps),
           ...rentObj,
           commonfee: info.commonfee,
 
@@ -122,8 +181,6 @@ const converter = {
         });
       }
     }
-
-    logger.debug(JSON.stringify(convertedForBigQueryRows));
 
     return convertedForBigQueryRows;
   },

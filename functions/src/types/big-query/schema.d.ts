@@ -1,4 +1,4 @@
-import {TypeUrHouseId, TypeUrRoomId} from "..";
+import {TypeUrHouseId, TypeUrRoomId, TypeUrRoomPriceUpdatedTimestamp} from "..";
 
 interface ProtoTableType {
   identifier: string;
@@ -29,7 +29,7 @@ export interface TableRoomRecords extends ProtoTableType {
   floor: string // "3階"
 
   timestamp: string
-  updated_timestamp: string|null
+  updated: TypeUrRoomPriceUpdatedTimestamp[]
 
   low_rent: number // "102,400円"
   high_rent: number|null // "102,400円"
