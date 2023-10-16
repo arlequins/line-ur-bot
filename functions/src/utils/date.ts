@@ -11,7 +11,7 @@ dayjs.tz.setDefault(tz);
 export const DATE_FORMAT = "YYYY-MM-DD";
 export const DATETIME_FORMAT = "YYYY/MM/DD HH:mm";
 export const day = () => dayjs().tz();
-export const setDay = (str: string) => dayjs(str).tz();
+export const setDay = (str: string, format?: string) => format? dayjs(str, format).tz() : dayjs(str).tz();
 
 // batch
 export const currentTimestamp = () => day().format();

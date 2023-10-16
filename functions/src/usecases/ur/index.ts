@@ -1,23 +1,65 @@
-import {FIRESTORE_COLLECTION, FIRESTORE_COLLECTION_HISTORY, FIRESTORE_COLLECTION_MASTER} from "../../constants/db";
+import {
+  FIRESTORE_COLLECTION,
+  FIRESTORE_COLLECTION_HISTORY,
+  FIRESTORE_COLLECTION_IMAGES,
+  FIRESTORE_COLLECTION_MASTER,
+} from "../../constants/db";
 import {urAreaPrefs, targetHouseIds} from "../../constants/ur";
-import {fetchAreaList, fetchLeadTimeList, fetchRoomList} from "../../services/ur-api";
-import {TypeUrRoom, TypeUrRoomPrice, DocRecord, DocMasterHouse, TypeUrCrawlingData, TypeUrFilterRaw, TypeUrFilterRawRoom, DocHistoryRecent, DocHistoryLowcost, TypeUrFilterLowcost} from "../../types";
-import {currentDate, currentLocalTimestamp, currentTimestamp} from "../../utils/date";
+import {
+  fetchAreaList,
+  fetchLeadTimeList,
+  fetchRoomList,
+} from "../../services/ur-api";
+import {
+  TypeUrRoom,
+  TypeUrRoomPrice,
+  DocRecord,
+  DocMasterHouse,
+  TypeUrCrawlingData,
+  TypeUrFilterRaw,
+  TypeUrFilterRawRoom,
+  DocHistoryRecent,
+  DocHistoryLowcost,
+  TypeUrFilterLowcost,
+  DocImageMadori,
+  DocImageMadoriRoom,
+} from "../../types";
+import {
+  DATE_FORMAT,
+  currentDate,
+  currentLocalTimestamp,
+  currentTimestamp,
+  day,
+} from "../../utils/date";
 import {getDocument, setDocument} from "../../utils/db";
 import {objectEqualLength} from "../../utils";
-import {makeLinkMessage, makeLowcostMessage, makeHistoryFirstMessage, makeTextMessage, makeHistorySecondMessage} from "../../utils/line";
+import {
+  makeLinkMessage,
+  makeLowcostMessage,
+  makeHistoryFirstMessage,
+  makeTextMessage,
+  makeHistorySecondMessage,
+} from "../../utils/line";
 import {Message} from "@line/bot-sdk";
-import {ResponseLeadTime, ResponseUrHouse, ResponseUrRoom} from "../../types/api";
+import {
+  ResponseLeadTime,
+  ResponseUrHouse,
+  ResponseUrRoom,
+} from "../../types/api";
 import {OPTIONS} from "../../constants";
+import {saveMadoriImage} from "../../services/store";
 
-const defaultParseError = (num:number) => Number.isInteger(num) ? num : -1;
+const defaultParseError = (num: number) => (Number.isInteger(num) ? num : -1);
 const deleteYen = (str: string) => str.replace("円", "").replaceAll(",", "");
 const deleteBrackets = (str: string) => str.replace("（", "").replace("）", "");
-const convertCommonfee = (commonfee: string) => defaultParseError(Number.parseInt(deleteYen(deleteBrackets(commonfee)), 10));
-const convertRentfee = (rent: string) => defaultParseError(Number.parseInt(deleteYen(rent), 10));
+const convertCommonfee = (commonfee: string) =>
+  defaultParseError(Number.parseInt(deleteYen(deleteBrackets(commonfee)), 10));
+const convertRentfee = (rent: string) =>
+  defaultParseError(Number.parseInt(deleteYen(rent), 10));
 
-const convertRent = (rent: string) => { // 0 === "146,900円～158,300円", 0 > 162,900円
-  const delimiter= "～";
+const convertRent = (rent: string) => {
+  // 0 === "146,900円～158,300円", 0 > 162,900円
+  const delimiter = "～";
 
   if (!rent.includes(delimiter)) {
     return [convertRentfee(rent)];
@@ -27,13 +69,16 @@ const convertRent = (rent: string) => { // 0 === "146,900円～158,300円", 0 > 
   return strs.map((str) => convertRentfee(str));
 };
 
-const convertUrArea = async ({
-  tdfk,
-  area,
-}: {
-  tdfk: string,
-  area: string,
-}, list: ResponseUrHouse[]|null) => {
+const convertUrArea = async (
+  {
+    tdfk,
+    area,
+  }: {
+    tdfk: string;
+    area: string;
+  },
+  list: ResponseUrHouse[] | null
+) => {
   const result: DocMasterHouse = {
     houses: [],
     housePrices: [],
@@ -46,6 +91,21 @@ const convertUrArea = async ({
   }
 
   const timestamp = currentLocalTimestamp();
+  const docImageMadori = await getDocument<DocImageMadori>({
+    collection: FIRESTORE_COLLECTION.IMAGE,
+    id: FIRESTORE_COLLECTION_IMAGES.MADORI,
+  });
+
+  const prev = docImageMadori?.list ? docImageMadori.list : [];
+  const docImage: {
+    prev: DocImageMadoriRoom[];
+    next: DocImageMadoriRoom[];
+    isChange: boolean
+  } = {
+    prev,
+    next: [...prev],
+    isChange: false,
+  };
 
   for (const obj of list) {
     const roomCount = obj.roomCount;
@@ -81,26 +141,57 @@ const convertUrArea = async ({
 
       if (roomList) {
         for (const roomInfo of roomList) {
+          const roomId = roomInfo.id;
+          const madori = roomInfo.madori;
           const room = {
             houseId,
-            roomId: roomInfo.id,
+            roomId,
             name: roomInfo.name,
             type: roomInfo.type,
             floorspace: roomInfo.floorspace,
             floor: roomInfo.floor,
             urlDetail: roomInfo.urlDetail,
-            madori: roomInfo.madori,
+            madori,
           };
 
           rooms.push(room);
 
           roomPrices.push({
             houseId,
-            roomId: room.roomId,
+            roomId,
             timestamp,
             rents: convertRent(roomInfo.rent),
             commonfee: convertCommonfee(roomInfo.commonfee),
           });
+
+          const docImageMadori = docImage.prev.find(
+            (doc) => doc.roomId === roomId
+          );
+
+          const date = day();
+          const dateStr = date.format(DATE_FORMAT);
+          await saveMadoriImage(date, dateStr, roomId, madori, docImageMadori);
+
+          if (docImageMadori) {
+            const docImageMadoriIndex = docImage.prev.findIndex(
+              (doc) => doc.roomId === roomId
+            );
+            const prevObj = docImage.prev[docImageMadoriIndex];
+            docImage.next[docImageMadoriIndex] = {
+              ...prevObj,
+              dates: [
+                ...prevObj.dates,
+                dateStr,
+              ],
+            };
+          } else {
+            docImage.next.push({
+              houseId,
+              roomId,
+              dates: [dateStr],
+            });
+          }
+          docImage.isChange = true;
         }
       }
     }
@@ -120,14 +211,19 @@ const convertUrArea = async ({
 
     result.houses.push(house);
     result.housePrices.push(housePrice);
-    result.rooms = [
-      ...result.rooms,
-      ...rooms,
-    ];
-    result.roomPrices = [
-      ...result.roomPrices,
-      ...roomPrices,
-    ];
+    result.rooms = [...result.rooms, ...rooms];
+    result.roomPrices = [...result.roomPrices, ...roomPrices];
+  }
+
+  if (docImage.isChange) {
+    console.log(JSON.stringify(docImage.next));
+    await setDocument<DocImageMadori>({
+      collection: FIRESTORE_COLLECTION.IMAGE,
+      id: FIRESTORE_COLLECTION_IMAGES.MADORI,
+      data: {
+        list: docImage.next,
+      },
+    });
   }
 
   return result;
@@ -162,7 +258,9 @@ export const pullUrData = async (): Promise<TypeUrCrawlingData> => {
       const resultArea = await convertUrArea(payloadArea, responseArea);
 
       resultArea.houses.forEach((obj) => result.master.houses.push(obj));
-      resultArea.housePrices.forEach((obj) => result.master.housePrices.push(obj));
+      resultArea.housePrices.forEach((obj) =>
+        result.master.housePrices.push(obj)
+      );
       resultArea.rooms.forEach((obj) => result.master.rooms.push(obj));
       resultArea.roomPrices.forEach((obj) => {
         result.master.roomPrices.push(obj);
@@ -174,11 +272,15 @@ export const pullUrData = async (): Promise<TypeUrCrawlingData> => {
   return result;
 };
 
-export const filterUrData = ({master: urData}: TypeUrCrawlingData): TypeUrFilterRaw[] => {
+export const filterUrData = ({
+  master: urData,
+}: TypeUrCrawlingData): TypeUrFilterRaw[] => {
   const results = [];
 
   for (const house of urData.houses) {
-    const targetHousePrice = urData.housePrices.find((housePrice) => housePrice.houseId === house.houseId);
+    const targetHousePrice = urData.housePrices.find(
+      (housePrice) => housePrice.houseId === house.houseId
+    );
     if (!targetHousePrice) {
       continue;
     }
@@ -199,9 +301,13 @@ export const filterUrData = ({master: urData}: TypeUrCrawlingData): TypeUrFilter
       }
 
       // filter room rent price
-      if (rents.length === 1 ? rents[0] > OPTIONS.history.rentHigh :
-        rents.length === 2 ?
-          rents[1] > OPTIONS.history.rentHigh : true) {
+      if (
+        rents.length === 1 ?
+          rents[0] > OPTIONS.history.rentHigh :
+          rents.length === 2 ?
+            rents[1] > OPTIONS.history.rentHigh :
+            true
+      ) {
         continue;
       }
 
@@ -248,7 +354,11 @@ const mergeRecords = (current: TypeUrRoomPrice[], prevDoc?: DocRecord) => {
     const timestamp = currentLocalTimestamp();
 
     for (const currentRecord of current) {
-      const targetPrev = prev.find((obj) => obj.houseId === currentRecord.houseId && obj.roomId === currentRecord.roomId);
+      const targetPrev = prev.find(
+        (obj) =>
+          obj.houseId === currentRecord.houseId &&
+          obj.roomId === currentRecord.roomId
+      );
 
       if (!targetPrev) {
         records.push({
@@ -256,13 +366,12 @@ const mergeRecords = (current: TypeUrRoomPrice[], prevDoc?: DocRecord) => {
           updatedTimestamps: [timestamp],
         });
       } else {
-        const prevUpdatedTimestamps = targetPrev.updatedTimestamps?.length ? targetPrev.updatedTimestamps : [];
+        const prevUpdatedTimestamps = targetPrev.updatedTimestamps?.length ?
+          targetPrev.updatedTimestamps :
+          [];
         records.push({
           ...currentRecord,
-          updatedTimestamps: [
-            ...prevUpdatedTimestamps,
-            timestamp,
-          ],
+          updatedTimestamps: [...prevUpdatedTimestamps, timestamp],
         });
       }
     }
@@ -314,7 +423,9 @@ export const processHistory = async (isOverride = false) => {
     id: FIRESTORE_COLLECTION_HISTORY.RECENT,
   });
 
-  result.isNotSameStatus = !recentHistory || (recentHistory && !objectEqualLength(recentHistory.data, filteredUrData));
+  result.isNotSameStatus =
+    !recentHistory ||
+    (recentHistory && !objectEqualLength(recentHistory.data, filteredUrData));
 
   if (isOverride || result.isNotSameStatus) {
     await setDocument<DocHistoryRecent>({
@@ -326,10 +437,16 @@ export const processHistory = async (isOverride = false) => {
       },
     });
 
+    const messages = filteredUrData.length ?
+      [
+        makeTextMessage(makeHistorySecondMessage(filteredUrData)),
+        makeTextMessage(makeLinkMessage(filteredUrData)),
+      ] :
+      [];
+
     result.messages = [
       makeTextMessage(makeHistoryFirstMessage(filteredUrData)),
-      makeTextMessage(makeHistorySecondMessage(filteredUrData)),
-      makeTextMessage(makeLinkMessage(filteredUrData)),
+      ...messages,
     ];
   }
 
@@ -340,15 +457,17 @@ const filterLowcostList = (rawList: ResponseLeadTime[]) => {
   const list: TypeUrFilterLowcost[] = [];
 
   for (const raw of rawList) {
-    const rooms = raw.room.map((room) => ({
-      roomId: room.id,
-      rents: convertRent(room.rent),
-      commonfee: convertRentfee(room.commonfee),
-      name: `${room.roomNmMain} ${room.roomNmSub}`,
-      type: room.type, // "2DK";
-      floorspace: room.floorspace, // "50&#13217;";
-      floor: room.floor, // "1階";
-    })).sort((a, b) => a.rents[0] - b.rents[0]);
+    const rooms = raw.room
+      .map((room) => ({
+        roomId: room.id,
+        rents: convertRent(room.rent),
+        commonfee: convertRentfee(room.commonfee),
+        name: `${room.roomNmMain} ${room.roomNmSub}`,
+        type: room.type, // "2DK";
+        floorspace: room.floorspace, // "50&#13217;";
+        floor: room.floor, // "1階";
+      }))
+      .sort((a, b) => a.rents[0] - b.rents[0]);
 
     if (!rooms.length) {
       continue;
@@ -367,7 +486,9 @@ const filterLowcostList = (rawList: ResponseLeadTime[]) => {
     });
   }
 
-  return list.filter((house) => house.roomCount).sort((a, b) => a.lowRents[0] - b.lowRents[0]);
+  return list
+    .filter((house) => house.roomCount)
+    .sort((a, b) => a.lowRents[0] - b.lowRents[0]);
 };
 
 export const processLowcost = async () => {
@@ -380,7 +501,9 @@ export const processLowcost = async () => {
 
   if (!list) {
     result.messages = [
-      makeTextMessage("確認中エラーが発生しました。\n再度リクエストしてください。"),
+      makeTextMessage(
+        "確認中エラーが発生しました。\n再度リクエストしてください。"
+      ),
     ];
     return result;
   }
@@ -388,9 +511,7 @@ export const processLowcost = async () => {
   const filterList = filterLowcostList(list);
 
   if (!filterList.length) {
-    result.messages = [
-      makeTextMessage("条件に合う物件がないです。"),
-    ];
+    result.messages = [makeTextMessage("条件に合う物件がないです。")];
     return result;
   }
 
@@ -400,7 +521,9 @@ export const processLowcost = async () => {
     id: FIRESTORE_COLLECTION_HISTORY.LOWCOST,
   });
 
-  result.isNotSameStatus = !historyLowcost || (historyLowcost && !objectEqualLength(historyLowcost.data, filterList));
+  result.isNotSameStatus =
+    !historyLowcost ||
+    (historyLowcost && !objectEqualLength(historyLowcost.data, filterList));
 
   if (result.isNotSameStatus) {
     await setDocument<DocHistoryLowcost>({
@@ -412,13 +535,9 @@ export const processLowcost = async () => {
       },
     });
 
-    result.messages = [
-      makeTextMessage(makeLowcostMessage(filterList)),
-    ];
+    result.messages = [makeTextMessage(makeLowcostMessage(filterList))];
   } else {
-    result.messages = [
-      makeTextMessage("前回と同じです。"),
-    ];
+    result.messages = [makeTextMessage("前回と同じです。")];
   }
 
   return result;
