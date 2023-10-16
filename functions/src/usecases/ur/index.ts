@@ -1,4 +1,3 @@
-import {OPTIONS} from "../../constants";
 import {FIRESTORE_COLLECTION, FIRESTORE_COLLECTION_HISTORY, FIRESTORE_COLLECTION_MASTER} from "../../constants/db";
 import {urAreaPrefs, targetHouseIds} from "../../constants/ur";
 import {fetchAreaList, fetchLeadTimeList, fetchRoomList} from "../../services/ur-api";
@@ -6,9 +5,10 @@ import {TypeUrRoom, TypeUrRoomPrice, DocRecord, DocMasterHouse, TypeUrCrawlingDa
 import {currentDate, currentLocalTimestamp, currentTimestamp} from "../../utils/date";
 import {getDocument, setDocument} from "../../utils/db";
 import {objectEqualLength} from "../../utils";
-import {makeFirstMessage, makeFourthMessage, makeLowcostMessage, makeSecondMessage, makeTextMessage, makeThirdMessage} from "../../utils/line";
+import {makeLinkMessage, makeLowcostMessage, makeHistoryFirstMessage, makeTextMessage, makeHistorySecondMessage} from "../../utils/line";
 import {Message} from "@line/bot-sdk";
 import {ResponseLeadTime, ResponseUrHouse, ResponseUrRoom} from "../../types/api";
+import {OPTIONS} from "../../constants";
 
 const defaultParseError = (num:number) => Number.isInteger(num) ? num : -1;
 const deleteYen = (str: string) => str.replace("円", "").replaceAll(",", "");
@@ -71,7 +71,7 @@ const convertUrArea = async ({
     if (roomCount > 0 && targetHouseIds.includes(houseId)) {
       const roomList = await fetchRoomList<ResponseUrRoom[]>({
         rent_low: "",
-        rent_high: OPTIONS.history.rentHigh,
+        rent_high: `${OPTIONS.history.payloadRentHigh}`,
         floorspace_low: "",
         floorspace_high: "",
         mode: "init",
@@ -193,7 +193,20 @@ export const filterUrData = ({master: urData}: TypeUrCrawlingData): TypeUrFilter
       const roomId = targetRoomPrice.roomId;
       const rents = targetRoomPrice.rents;
       const room = urData.rooms.find((obj) => obj.roomId === roomId);
+
       if (!room) {
+        continue;
+      }
+
+      // filter room rent price
+      if (rents.length === 1 ? rents[0] > OPTIONS.history.rentHigh :
+        rents.length === 2 ?
+          rents[1] > OPTIONS.history.rentHigh : true) {
+        continue;
+      }
+
+      // filter room size
+      if (!OPTIONS.history.rooms.includes(room.type)) {
         continue;
       }
 
@@ -314,10 +327,9 @@ export const processHistory = async (isOverride = false) => {
     });
 
     result.messages = [
-      makeFirstMessage(filteredUrData),
-      makeTextMessage(makeSecondMessage(filteredUrData)),
-      makeTextMessage(makeThirdMessage(filteredUrData)),
-      makeTextMessage(makeFourthMessage(filteredUrData)),
+      makeTextMessage(makeHistoryFirstMessage(filteredUrData)),
+      makeTextMessage(makeHistorySecondMessage(filteredUrData)),
+      makeTextMessage(makeLinkMessage(filteredUrData)),
     ];
   }
 
