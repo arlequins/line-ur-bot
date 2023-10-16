@@ -80,7 +80,7 @@ export const fourthOrderHouseIds: TypeUrHouseId[] = [
   "20_7120", // 足立区, ハートアイランド新田四番街, 1K～3LDK/43㎡～112㎡, 82,100円～219,600円(5,500円), 271, 12年
 ];
 
-export const extraOrderHouseIds: TypeUrHouseId[] = [
+export const excludeHouseIds: TypeUrHouseId[] = [
   "40_0960", // 藤沢市, 辻堂, 1DK～3DK/27㎡～60㎡, 34,000円～90,600円(2,500円), 1,311, 58年
   "40_2870", // 藤沢市, 湘南ライフタウンパークサイド駒寄, 1DK～4LDK/43㎡～93㎡, 74,100円～132,900円(3,200円), 239, 30年～31年
   "40_3120", // 戸塚区, コンフォール上倉田, 1DK～4LDK/34㎡～97㎡, 79,100円～221,600円(3,700円), 516, 24年～29年
@@ -93,5 +93,4 @@ export const targetHouseIds = [
   ...secondOrderHouseIds,
   ...thirdOrderHouseIds,
   ...fourthOrderHouseIds,
-  ...extraOrderHouseIds,
 ];
