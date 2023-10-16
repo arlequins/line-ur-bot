@@ -191,28 +191,28 @@ const convertUrArea = async (
           const date = day();
           const dateStr = date.format(DATE_FORMAT);
 
-          const isSkipSaveImage = checkIsSkipSaveImage(date, docImageMadori);
+          if (!docImageMadori || (docImageMadori && !checkIsSkipSaveImage(date, docImageMadori))) {
 
-          if (docImageMadori && !isSkipSaveImage) {
-            const docImageMadoriIndex = docImage.prev.findIndex(
-              (doc) => doc.roomId === roomId
-            );
-            const prevObj = docImage.prev[docImageMadoriIndex];
-            docImage.next[docImageMadoriIndex] = {
-              ...prevObj,
-              dates: [
-                ...prevObj.dates,
-                dateStr,
-              ],
-            };
-            docImage.isChange = true;
-            await saveMadoriImage(dateStr, roomId, madori);
-          } else if (!docImageMadori) {
-            docImage.next.push({
-              houseId,
-              roomId,
-              dates: [dateStr],
-            });
+            if (!docImageMadori) {
+              docImage.next.push({
+                houseId,
+                roomId,
+                dates: [dateStr],
+              });
+            } else {
+              const docImageMadoriIndex = docImage.prev.findIndex(
+                (doc) => doc.roomId === roomId
+              );
+              const prevObj = docImage.prev[docImageMadoriIndex];
+              docImage.next[docImageMadoriIndex] = {
+                ...prevObj,
+                dates: [
+                  ...prevObj.dates,
+                  dateStr,
+                ],
+              };
+            }
+
             docImage.isChange = true;
             await saveMadoriImage(dateStr, roomId, madori);
           }
