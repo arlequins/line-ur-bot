@@ -192,7 +192,6 @@ const convertUrArea = async (
           const dateStr = date.format(DATE_FORMAT);
 
           if (!docImageMadori || (docImageMadori && !checkIsSkipSaveImage(date, docImageMadori))) {
-
             if (!docImageMadori) {
               docImage.next.push({
                 houseId,
@@ -240,7 +239,10 @@ const convertUrArea = async (
   }
 
   if (docImage.isChange) {
-    console.log(JSON.stringify(docImage.next));
+    logger.debug({
+      type: 'docImage.isChange',
+      data: JSON.stringify(docImage.next),
+    })
     await setDocument<DocImageMadori>({
       collection: FIRESTORE_COLLECTION.IMAGE,
       id: FIRESTORE_COLLECTION_IMAGES.MADORI,
