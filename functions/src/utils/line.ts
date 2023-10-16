@@ -18,7 +18,7 @@ export const makeHistoryFirstMessage = (
   for (const [index, house] of Object.entries(filteredUrData)) {
     const count = Number.parseInt(index) + 1;
     str += "---------------------------\n";
-    str += `${house.name} - ${house.skcs}\n部屋${house.roomCount}個\n${convertRentsToYen(house.rents).join(" | ")}${count !== filteredUrData.length ? "\n" : ""}`;
+    str += `${house.name} - ${house.skcs}\n${house.roomCount}個\n${convertRentsToYen(house.rents).join(" | ")}${count !== filteredUrData.length ? "\n" : ""}`;
   }
 
   return str;
@@ -68,7 +68,7 @@ export const makeLowcostMessage = (
   for (const [index, house] of Object.entries(filterList)) {
     const count = Number.parseInt(index) + 1;
     str += "---------------------------\n";
-    str += `${house.name} - 部屋${house.roomCount}個\n`;
+    str += `${house.name} - ${house.roomCount}個\n`;
 
     for (const [innerIndex, room] of Object.entries(house.rooms)) {
       const innerCount = Number.parseInt(innerIndex) + 1;
