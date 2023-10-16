@@ -240,9 +240,9 @@ const convertUrArea = async (
 
   if (docImage.isChange) {
     logger.debug({
-      type: 'docImage.isChange',
+      type: "docImage.isChange",
       data: JSON.stringify(docImage.next),
-    })
+    });
     await setDocument<DocImageMadori>({
       collection: FIRESTORE_COLLECTION.IMAGE,
       id: FIRESTORE_COLLECTION_IMAGES.MADORI,
