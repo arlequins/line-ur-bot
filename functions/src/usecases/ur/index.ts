@@ -30,6 +30,7 @@ import {
   currentLocalTimestamp,
   currentTimestamp,
   day,
+  setDay,
 } from "../../utils/date";
 import {getDocument, setDocument} from "../../utils/db";
 import {objectEqualLength} from "../../utils";
@@ -48,6 +49,8 @@ import {
 } from "../../types/api";
 import {OPTIONS} from "../../constants";
 import {saveMadoriImage} from "../../services/store";
+import {logger} from "firebase-functions/v1";
+import {Dayjs} from "dayjs";
 
 const defaultParseError = (num: number) => (Number.isInteger(num) ? num : -1);
 const deleteYen = (str: string) => str.replace("円", "").replaceAll(",", "");
@@ -67,6 +70,23 @@ const convertRent = (rent: string) => {
 
   const strs = rent.split(delimiter);
   return strs.map((str) => convertRentfee(str));
+};
+
+const checkIsSkipSaveImage = (date: Dayjs, docImageMadori?: DocImageMadoriRoom) => {
+  if (docImageMadori) {
+    const lastSavedDate = docImageMadori.dates[docImageMadori.dates.length - 1];
+    const lastDate = setDay(lastSavedDate);
+
+    if (date.diff(lastDate, "days") < 30) {
+      logger.debug({
+        type: "saveMadoriImage",
+        status: "skip",
+      });
+      return true;
+    }
+  }
+
+  return false;
 };
 
 const convertUrArea = async (
@@ -170,9 +190,10 @@ const convertUrArea = async (
 
           const date = day();
           const dateStr = date.format(DATE_FORMAT);
-          await saveMadoriImage(date, dateStr, roomId, madori, docImageMadori);
 
-          if (docImageMadori) {
+          const isSkipSaveImage = checkIsSkipSaveImage(date, docImageMadori);
+
+          if (docImageMadori && !isSkipSaveImage) {
             const docImageMadoriIndex = docImage.prev.findIndex(
               (doc) => doc.roomId === roomId
             );
@@ -184,14 +205,17 @@ const convertUrArea = async (
                 dateStr,
               ],
             };
-          } else {
+            docImage.isChange = true;
+            await saveMadoriImage(dateStr, roomId, madori);
+          } else if (!docImageMadori) {
             docImage.next.push({
               houseId,
               roomId,
               dates: [dateStr],
             });
+            docImage.isChange = true;
+            await saveMadoriImage(dateStr, roomId, madori);
           }
-          docImage.isChange = true;
         }
       }
     }

@@ -17,6 +17,3 @@ cp .env.sample .env
 ```
 npx firebase-tools deploy
 ```
-
-## TODO LIST
-- [ ] save madori image

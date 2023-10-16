@@ -1,8 +1,5 @@
 import axios from "axios";
 import {bucket} from "./firebase";
-import {setDay} from "../utils/date";
-import {DocImageMadoriRoom} from "../types";
-import {Dayjs} from "dayjs";
 import {logger} from "firebase-functions/v1";
 
 const prefixImagePath = "images";
@@ -21,20 +18,7 @@ const uploadFile = async (bufferData: Buffer, middle: string, dest: string) => {
     .save(bufferData);
 };
 
-export const saveMadoriImage = async (date: Dayjs, dateStr: string, roomId: string, madoriImage: string, docImageMadori?: DocImageMadoriRoom) => {
-  if (docImageMadori) {
-    const lastSavedDate = docImageMadori.dates[docImageMadori.dates.length - 1];
-    const lastDate = setDay(lastSavedDate);
-
-    if (date.diff(lastDate, "days") < 30) {
-      logger.debug({
-        type: "saveMadoriImage",
-        status: "skip",
-      });
-      return;
-    }
-  }
-
+export const saveMadoriImage = async (dateStr: string, roomId: string, madoriImage: string) => {
   const bufferData = await getBufferData(madoriImage);
 
   const filename = `${roomId}/${dateStr}.gif`;
