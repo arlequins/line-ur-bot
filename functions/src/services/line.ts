@@ -9,12 +9,12 @@ const client = new Client({
 
 const pushMessage = async (userId: string, messages: Message[]) => {
   try {
-    logger.debug({
+    logger.log({
       name: "pushMessages",
       params: JSON.stringify({userId, messages}),
     });
     const response = await client.pushMessage(userId, messages);
-    logger.debug({
+    logger.log({
       name: "pushMessages",
       response: JSON.stringify(response),
     });
@@ -27,12 +27,12 @@ const pushMessage = async (userId: string, messages: Message[]) => {
 
 const replyMessage = async (replyToken: string, messages: Message[]) => {
   try {
-    logger.debug({
+    logger.log({
       name: "replyMessages",
       params: JSON.stringify({replyToken, messages}),
     });
     const response = await client.replyMessage(replyToken, messages);
-    logger.debug({
+    logger.log({
       name: "replyMessages",
       response: JSON.stringify(response),
     });

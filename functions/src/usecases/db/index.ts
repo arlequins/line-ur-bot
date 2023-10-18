@@ -1,5 +1,5 @@
 import {logger} from "firebase-functions/v1";
-import {db} from "../../services/db";
+import {db} from "../../services/firebase";
 
 // Each batch of writes can write to a maximum of 500 documents.
 const limit = 500;

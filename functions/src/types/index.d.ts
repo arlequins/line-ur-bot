@@ -114,3 +114,13 @@ export type DocHistoryLowcost = {
   data: TypeUrFilterLowcost[],
   timestamp: string,
 }
+
+export type DocImageMadoriRoom = {
+  houseId: TypeUrHouseId
+  roomId: TypeUrRoomId // "000030306"
+  dates: string[]
+}
+
+export type DocImageMadori = {
+  list: DocImageMadoriRoom[]
+}
