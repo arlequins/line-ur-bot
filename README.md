@@ -17,3 +17,6 @@ cp .env.sample .env
 ```
 npx firebase-tools deploy
 ```
+
+## todo
+- [ ] sync master house and room
