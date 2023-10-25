@@ -50,8 +50,6 @@ export const transferBigQuery = async (): Promise<void> => {
     logger.info({
       date,
       count: {
-        masterHouses: result.masterHouses.length,
-        masterRooms: result.masterRooms.length,
         roomRecords: result.roomRecords.length,
       },
       status: "batch transferBigQuery done",
