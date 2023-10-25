@@ -6,7 +6,7 @@ import {
 } from "../../utils/big-query";
 import {PayloadCreateOrGetTable} from "../../types/big-query";
 import converter, {TypeConvertPayload} from "../../utils/big-query/converter";
-import {TableMasterHouses, TableMasterRooms, TableRoomRecords} from "../../types/big-query/schema";
+import {TableRoomRecords} from "../../types/big-query/schema";
 import {tableInfo} from "../../constants/big-query";
 import {DocMasterHouse, DocRecord} from "../../types";
 import {getDocument, getDocuments} from "../../utils/db";
@@ -59,7 +59,7 @@ const transferTable = async (data: TypeConvertPayload) => {
     const rows = data.rows;
 
     if (data.rows.length) {
-      await makeTableAndInsertRows<TableMasterHouses|TableMasterRooms|TableRoomRecords>({
+      await makeTableAndInsertRows<TableRoomRecords>({
         schema: tableInfo[data.type], rows,
       });
     }
@@ -75,8 +75,6 @@ const transferTable = async (data: TypeConvertPayload) => {
 
 export const processTransferTable = async (date: string) => {
   const payload = {
-    masterHouses: [] as TableMasterHouses[],
-    masterRooms: [] as TableMasterRooms[],
     roomRecords: [] as TableRoomRecords[],
   };
 
@@ -89,20 +87,6 @@ export const processTransferTable = async (date: string) => {
     return payload;
   }
 
-  payload.masterHouses = converter.masterHouses(masterHouse);
-  payload.masterRooms = converter.masterRooms(masterHouse);
-
-  await transferTable({
-    type: "masterHouses",
-    rows: payload.masterHouses,
-  });
-
-  await transferTable({
-    type: "masterRooms",
-    rows: payload.masterRooms,
-  });
-
-  // process roomRecords
   const roomRecords = await getDocuments<DocRecord>({
     collection: FIRESTORE_COLLECTION.RECORDS,
     date,
