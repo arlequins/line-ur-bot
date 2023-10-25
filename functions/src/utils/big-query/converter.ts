@@ -1,7 +1,5 @@
 import {DocMasterHouse, DocRecord, TypeUrRoomPriceUpdatedTimestamp} from "../../types";
 import {
-  TableMasterHouses,
-  TableMasterRooms,
   TableRoomRecords,
 } from "../../types/big-query/schema";
 import {currentTimestamp, setDay} from "../date";
@@ -11,25 +9,12 @@ export type ConvertKey = "masterHouses" | "masterRooms" | "roomRecords";
 
 export type ConvertPayload = DocMasterHouse & DocMasterHouse[] & DocRecord[];
 
-export type TypeConvertHouses = {
-  type: "masterHouses";
-  rows: TableMasterHouses[];
-};
-
-export type TypeConvertRooms = {
-  type: "masterRooms";
-  rows: TableMasterRooms[];
-};
-
 export type TypeRoomRecords = {
   type: "roomRecords";
   rows: TableRoomRecords[];
 };
 
-export type TypeConvertPayload =
-  | TypeConvertHouses
-  | TypeConvertRooms
-  | TypeRoomRecords;
+export type TypeConvertPayload = TypeRoomRecords;
 
 const convertUpdated = (
   allUpdatedTimestamps?: string[],
@@ -89,38 +74,6 @@ const convertUpdated = (
 };
 
 const converter = {
-  masterHouses: (_doc: DocMasterHouse): TableMasterHouses[] => {
-    const convertedForBigQueryRows = [] as TableMasterHouses[];
-
-    // TODO: make master data
-    // for (const obj of list.houses) {
-    //   convertedForBigQueryRows.push({
-    //     identifier,
-
-    //     house_id: obj.houseId,
-
-    //     sync_timestamp: syncTimestamp,
-    //   });
-    // }
-
-    return convertedForBigQueryRows;
-  },
-  masterRooms: (_doc: DocMasterHouse): TableMasterRooms[] => {
-    const convertedForBigQueryRows = [] as TableMasterRooms[];
-
-    // TODO: make master data
-    // for (const obj of list) {
-    //   convertedForBigQueryRows.push({
-    //     identifier,
-
-    //     house_id: obj.houseId,
-
-    //     sync_timestamp: syncTimestamp,
-    //   });
-    // }
-
-    return convertedForBigQueryRows;
-  },
   roomRecords: (
     date: string,
     masterHouse: DocMasterHouse,

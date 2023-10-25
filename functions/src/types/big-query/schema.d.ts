@@ -5,15 +5,6 @@ interface ProtoTableType {
   sync_timestamp: string;
 }
 
-export interface TableMasterHouses extends ProtoTableType {
-  house_id: TypeUrHouseId // "40_3410"
-}
-
-export interface TableMasterRooms extends ProtoTableType {
-  house_id: TypeUrHouseId // "40_3410"
-  room_id: TypeUrRoomId // "000030306"
-}
-
 export interface TableRoomRecords extends ProtoTableType {
   house_id: TypeUrHouseId // "40_3410"
   room_id: TypeUrRoomId // "000030306"
