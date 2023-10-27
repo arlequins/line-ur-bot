@@ -6,7 +6,7 @@ on:
 
 jobs:
   lint:
-    name: lint and check App
+    name: lint
     runs-on: ubuntu-latest
     environment: production
     steps:

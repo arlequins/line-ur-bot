@@ -10,7 +10,7 @@ concurrency:
 
 jobs:
   deploy:
-    name: Deploy App
+    name: deploy
     runs-on: ubuntu-latest
     environment: production
     steps:
