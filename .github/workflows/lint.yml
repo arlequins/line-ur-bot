@@ -9,6 +9,9 @@ jobs:
     name: lint
     runs-on: ubuntu-latest
     environment: production
+    defaults:
+      run:
+        working-directory: functions
     steps:
       - uses: actions/checkout@v3
         with:
@@ -27,5 +30,9 @@ jobs:
           envkey_LINE_CHANNEL_SECRET: ${{ secrets.LINE_CHANNEL_SECRET }}
           envkey_LINE_PUSH_USER_ID: ${{ secrets.LINE_PUSH_USER_ID }}
 
-      - name: install & lint
-        run: cd functions && npm install && npm run lint:fix
+      - name: install
+        run: npm install
+      - name: lint
+        run: npm run lint
+      - name: build
+        run: npm run build
