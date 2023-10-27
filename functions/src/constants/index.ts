@@ -31,11 +31,11 @@ export const OPTIONS = {
   history: {
     payloadRentHigh: 100000,
     rentHigh: 90000,
-    rooms: ["1K", "1DK", "1LDK", "2DK"],
+    rooms: ["1K", "1DK", "1LDK"],
   },
   lowcost: {
     year: 25,
     rentHigh: 90000,
-    rooms: ["1R,1K", "1DK", "1LDK", "2DK"],
+    rooms: ["1DK", "1LDK"],
   },
 };
