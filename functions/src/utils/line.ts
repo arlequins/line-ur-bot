@@ -52,7 +52,7 @@ export const makeLinkMessage = (
   const lowTargetHouses = filteredUrData.sort((a, b) => a.lowRent - b.lowRent);
 
   for (const lowTargetHouse of lowTargetHouses) {
-    str += `${UR_BASE_URL}${lowTargetHouse.url}`;
+    str += `${UR_BASE_URL}${lowTargetHouse.url}\n`;
   }
 
   return str;
