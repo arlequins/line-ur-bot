@@ -10,6 +10,13 @@ const instance = axios.create({
 
 export const fetchAreaList = async<T>(payload: PayloadUrAreaList) => {
   try {
+    logger.info({
+      message: "fetchAreaList request",
+      base: UR_BASE_API_URL,
+      url: "/bukken/search/list_bukken/",
+      payload,
+    });
+
     const response = await instance.post("/bukken/search/list_bukken/", payload);
 
     return response.data as T;
@@ -28,6 +35,13 @@ export const fetchAreaList = async<T>(payload: PayloadUrAreaList) => {
 
 export const fetchRoomList = async<T>(payload: PayloadUrRoomList) => {
   try {
+    logger.info({
+      message: "fetchRoomList request",
+      base: UR_BASE_API_URL,
+      url: "/room/list/",
+      payload,
+    });
+    
     const response = await instance.post("/room/list/", payload);
 
     return response.data as T;
