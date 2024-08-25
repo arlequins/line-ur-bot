@@ -41,7 +41,7 @@ export const fetchRoomList = async<T>(payload: PayloadUrRoomList) => {
       url: "/room/list/",
       payload,
     });
-    
+
     const response = await instance.post("/room/list/", payload);
 
     return response.data as T;
