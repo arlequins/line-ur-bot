@@ -1,38 +1,40 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * import {onCall} from "firebase-functions/v2/https";
- * import {onDocumentWritten} from "firebase-functions/v2/firestore";
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
-import * as functions from "firebase-functions";
+import {onRequest} from "firebase-functions/v2/https";
+import {onSchedule} from "firebase-functions/v2/scheduler";
 import {ENV} from "./constants";
 import v1ApiHandler from "./controllers/v1/api";
 import * as v1BatchHandler from "./controllers/v1/batch";
 import {BATCH} from "./constants/batch";
 
-// api
-export const v1 = functions.region(ENV.REGION).https.onRequest(v1ApiHandler);
+// The names intentionally differ from the 1st-generation functions. Deploy these
+// alongside the existing functions, then follow docs/functions-gen2-migration.md.
+export const v2 = onRequest({region: ENV.REGION}, v1ApiHandler);
 
-// batch
-export const batchFetchUrData = functions
-  .region(ENV.REGION)
-  .runWith(BATCH.runWith.fetchUrData)
-  .pubsub.schedule(BATCH.schedule.fetchUrData)
-  .timeZone(ENV.TIMEZONE)
-  .onRun(async () => await v1BatchHandler.fetchUrData());
+export const batchFetchUrDataV2 = onSchedule(
+  {
+    region: ENV.REGION,
+    schedule: BATCH.schedule.fetchUrData,
+    timeZone: ENV.TIMEZONE,
+    ...BATCH.runWith.fetchUrData,
+  },
+  async () => await v1BatchHandler.fetchUrData()
+);
 
-export const batchFetchLowCost = functions
-  .region(ENV.REGION)
-  .runWith(BATCH.runWith.fetchLowCost)
-  .pubsub.schedule(BATCH.schedule.fetchLowCost)
-  .timeZone(ENV.TIMEZONE)
-  .onRun(async () => await v1BatchHandler.fetchLowCost());
+export const batchFetchLowCostV2 = onSchedule(
+  {
+    region: ENV.REGION,
+    schedule: BATCH.schedule.fetchLowCost,
+    timeZone: ENV.TIMEZONE,
+    ...BATCH.runWith.fetchLowCost,
+  },
+  async () => await v1BatchHandler.fetchLowCost()
+);
 
-export const batchTransferBigQuery = functions
-  .region(ENV.REGION)
-  .runWith(BATCH.runWith.transferBigQuery)
-  .pubsub.schedule(BATCH.schedule.transferBigQuery)
-  .timeZone(ENV.TIMEZONE)
-  .onRun(async () => await v1BatchHandler.transferBigQuery());
+export const batchTransferBigQueryV2 = onSchedule(
+  {
+    region: ENV.REGION,
+    schedule: BATCH.schedule.transferBigQuery,
+    timeZone: ENV.TIMEZONE,
+    ...BATCH.runWith.transferBigQuery,
+  },
+  async () => await v1BatchHandler.transferBigQuery()
+);

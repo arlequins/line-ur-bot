@@ -1,18 +1,16 @@
-import {VALID_MEMORY_OPTIONS} from "firebase-functions";
-
 export const BATCH = {
   runWith: {
     fetchUrData: {
       timeoutSeconds: 300,
-      memory: VALID_MEMORY_OPTIONS[1],
+      memory: "256MiB" as const,
     },
     transferBigQuery: {
       timeoutSeconds: 300,
-      memory: VALID_MEMORY_OPTIONS[1],
+      memory: "256MiB" as const,
     },
     fetchLowCost: {
       timeoutSeconds: 300,
-      memory: VALID_MEMORY_OPTIONS[1],
+      memory: "256MiB" as const,
     },
   },
   schedule: {
