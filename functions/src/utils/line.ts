@@ -13,7 +13,13 @@ export const makeTextMessage = (msg: string): messagingApi.TextMessage => ({
 export const makeHistoryFirstMessage = (
   filteredUrData: TypeUrFilterRaw[],
 ): string => {
-  let str = `物件情報：${filteredUrData.length}件\n`;
+  let str = `物件情報：${filteredUrData.length}件`;
+
+  if (!filteredUrData.length) {
+    return str;
+  }
+
+  str += "\n";
 
   for (const [index, house] of Object.entries(filteredUrData)) {
     const count = Number.parseInt(index) + 1;

@@ -1,8 +1,16 @@
+import {defineSecret} from "firebase-functions/params";
+
 export enum ENV {
   REGION = "asia-northeast1",
   TIMEZONE = "Asia/Tokyo",
   BIGQUERY_DATASET_NAME = "ur_archives",
 }
+
+export const LINE_SECRETS = [
+  defineSecret("LINE_CHANNEL_ACCESS_TOKEN"),
+  defineSecret("LINE_CHANNEL_SECRET"),
+  defineSecret("LINE_PUSH_USER_ID"),
+];
 
 const setValues = () => {
   const environment = process.env.ENVIRONMENT;
@@ -29,13 +37,13 @@ export const VALUES = setValues();
 
 export const OPTIONS = {
   history: {
-    payloadRentHigh: 100000,
-    rentHigh: 90000,
+    payloadRentHigh: 120000,
+    rentHigh: 120000,
     rooms: ["1K", "1DK", "1LDK"],
   },
   lowcost: {
     year: 25,
-    rentHigh: 90000,
+    rentHigh: 120000,
     rooms: ["1DK", "1LDK"],
   },
 };
