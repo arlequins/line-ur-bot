@@ -3,6 +3,7 @@ export const enum FIRESTORE_COLLECTION {
   RECORDS = "records",
   HISTORY = "history",
   IMAGE = "image",
+  BILLING_ALERT = "billing_alert",
 }
 
 export const enum FIRESTORE_COLLECTION_MASTER {
