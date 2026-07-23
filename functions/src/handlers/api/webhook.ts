@@ -1,6 +1,6 @@
 import {Request, Response} from "firebase-functions";
 import * as logger from "firebase-functions/logger";
-import {Message, WebhookEvent, WebhookRequestBody} from "@line/bot-sdk";
+import {messagingApi, webhook} from "@line/bot-sdk";
 import lineApi from "../../services/line";
 import {makeTextMessage} from "../../utils/line";
 import {processHistory, processLowcost} from "../../usecases/ur";
@@ -37,9 +37,9 @@ const setProcessResultText = (
   }
 };
 
-const processEvent = async (event: WebhookEvent) => {
+const processEvent = async (event: webhook.Event) => {
   const result = {
-    messages: [] as Message[],
+    messages: [] as messagingApi.Message[],
   };
 
   logger.log({
@@ -47,9 +47,9 @@ const processEvent = async (event: WebhookEvent) => {
     event,
   });
 
-  if (event.type === "message") {
+  if (event.type === "message" && event.replyToken) {
     // check line user id
-    if (event.source.type === "user" && event.source.userId !== VALUES.linePushUserId) {
+    if (event.source?.type === "user" && event.source.userId !== VALUES.linePushUserId) {
       result.messages = [
         makeTextMessage(
           "登録されているユーザーのリクエストではないです。"
@@ -101,7 +101,7 @@ export const main = async (
   request: Request,
   response: Response
 ): Promise<void> => {
-  const body: WebhookRequestBody = request.body;
+  const body: webhook.CallbackRequest = request.body;
   logger.log({
     type: "main",
     body,

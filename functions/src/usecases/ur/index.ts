@@ -41,7 +41,7 @@ import {
   makeTextMessage,
   makeHistorySecondMessage,
 } from "../../utils/line";
-import {Message} from "@line/bot-sdk";
+import {messagingApi} from "@line/bot-sdk";
 import {
   ResponseLeadTime,
   ResponseUrHouse,
@@ -408,7 +408,7 @@ const mergeRecords = (current: TypeUrRoomPrice[], prevDoc?: DocRecord) => {
 
 export const processHistory = async (isOverride = false) => {
   const result = {
-    messages: [] as Message[],
+    messages: [] as messagingApi.Message[],
     isNotSameStatus: false,
   };
 
@@ -519,7 +519,7 @@ const filterLowcostList = (rawList: ResponseLeadTime[]) => {
 
 export const processLowcost = async () => {
   const result = {
-    messages: [] as Message[],
+    messages: [] as messagingApi.Message[],
     isNotSameStatus: false,
   };
 
