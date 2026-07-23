@@ -12,8 +12,6 @@ const authenticate = (
   response: Response,
   next: express.NextFunction,
 ): void => {
-  response.set("Access-Control-Allow-Origin", "*");
-
   const lineSignature = request.headers["x-line-signature"];
   const rawBody = (request as ExtendRequest).rawBody.toString();
   const channelSecret = VALUES.channelSecret;

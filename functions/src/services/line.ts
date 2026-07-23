@@ -7,40 +7,19 @@ const client = LineBotClient.fromChannelAccessToken({
 });
 
 const pushMessage = async (userId: string, messages: messagingApi.Message[]) => {
-  try {
-    logger.log({
-      name: "pushMessages",
-      params: JSON.stringify({userId, messages}),
-    });
-    const response = await client.pushMessage({to: userId, messages});
-    logger.log({
-      name: "pushMessages",
-      response: JSON.stringify(response),
-    });
-    return response;
-  } catch (e) {
-    logger.error("pushMessages", e);
-    return undefined;
-  }
+  logger.log({
+    name: "pushMessages",
+    messageCount: messages.length,
+  });
+  return await client.pushMessage({to: userId, messages});
 };
 
 const replyMessage = async (replyToken: string, messages: messagingApi.Message[]) => {
-  try {
-    logger.log({
-      name: "replyMessages",
-      params: JSON.stringify({replyToken, messages}),
-    });
-    const response = await client.replyMessage({replyToken, messages});
-    logger.log({
-      name: "replyMessages",
-      response: JSON.stringify(response),
-    });
-    return response;
-  } catch (e) {
-    logger.error("replyMessages", e);
-
-    return undefined;
-  }
+  logger.log({
+    name: "replyMessages",
+    messageCount: messages.length,
+  });
+  return await client.replyMessage({replyToken, messages});
 };
 
 const lineApi = {

@@ -44,12 +44,22 @@ const processEvent = async (event: webhook.Event) => {
 
   logger.log({
     type: "processEvent",
-    event,
+    webhookEventId: event.webhookEventId,
+    eventType: event.type,
   });
 
   if (event.type === "message" && event.replyToken) {
+    if (event.source?.type !== "user") {
+      logger.info({
+        type: "ignoredEvent",
+        reason: "unsupportedSource",
+        webhookEventId: event.webhookEventId,
+      });
+      return;
+    }
+
     // check line user id
-    if (event.source?.type === "user" && event.source.userId !== VALUES.linePushUserId) {
+    if (event.source.userId !== VALUES.linePushUserId) {
       result.messages = [
         makeTextMessage(
           "登録されているユーザーのリクエストではないです。"
@@ -104,7 +114,7 @@ export const main = async (
   const body: webhook.CallbackRequest = request.body;
   logger.log({
     type: "main",
-    body,
+    eventCount: body.events.length,
   });
 
   const events = body.events;
@@ -120,9 +130,10 @@ export const main = async (
       message: "error",
       status: 500,
     });
+    return;
   }
 
-  response.send({
+  response.status(200).json({
     status: "stand-by",
   });
 };

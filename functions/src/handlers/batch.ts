@@ -20,6 +20,7 @@ export const fetchUrData = async (): Promise<void> => {
     });
   } catch (error) {
     logger.error(error);
+    throw error;
   }
 };
 
@@ -38,6 +39,7 @@ export const fetchLowCost = async (): Promise<void> => {
     });
   } catch (error) {
     logger.error(error);
+    throw error;
   }
 };
 
@@ -56,5 +58,6 @@ export const transferBigQuery = async (): Promise<void> => {
     });
   } catch (error) {
     logger.error(error);
+    throw error;
   }
 };

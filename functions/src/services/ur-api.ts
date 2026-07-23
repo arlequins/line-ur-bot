@@ -6,6 +6,7 @@ import {PayloadUrAreaList, PayloadUrRoomList} from "../types/api";
 
 const instance = axios.create({
   baseURL: UR_BASE_API_URL,
+  timeout: 10_000,
 });
 
 export const fetchAreaList = async<T>(payload: PayloadUrAreaList) => {
