@@ -17,6 +17,7 @@ export const batchFetchUrDataV2 = onSchedule(
     region: ENV.REGION,
     schedule: BATCH.schedule.fetchUrData,
     timeZone: ENV.TIMEZONE,
+    secrets: LINE_SECRETS,
     ...BATCH.runWith.fetchUrData,
   },
   async () => await v1BatchHandler.fetchUrData()
@@ -27,6 +28,7 @@ export const batchFetchLowCostV2 = onSchedule(
     region: ENV.REGION,
     schedule: BATCH.schedule.fetchLowCost,
     timeZone: ENV.TIMEZONE,
+    secrets: LINE_SECRETS,
     ...BATCH.runWith.fetchLowCost,
   },
   async () => await v1BatchHandler.fetchLowCost()
@@ -37,6 +39,7 @@ export const batchTransferBigQueryV2 = onSchedule(
     region: ENV.REGION,
     schedule: BATCH.schedule.transferBigQuery,
     timeZone: ENV.TIMEZONE,
+    secrets: LINE_SECRETS,
     ...BATCH.runWith.transferBigQuery,
   },
   async () => await v1BatchHandler.transferBigQuery()
