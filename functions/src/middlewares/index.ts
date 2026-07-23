@@ -4,7 +4,7 @@ import {webhookValidation} from "../utils";
 import {VALUES} from "../constants";
 
 interface ExtendRequest extends Request {
-  rawBody: Buffer
+  rawBody?: Buffer
 }
 
 const authenticate = (
@@ -13,13 +13,15 @@ const authenticate = (
   next: express.NextFunction,
 ): void => {
   const lineSignature = request.headers["x-line-signature"];
-  const rawBody = (request as ExtendRequest).rawBody.toString();
   const channelSecret = VALUES.channelSecret;
 
   if (!lineSignature || Array.isArray(lineSignature) || !channelSecret) {
     response.sendStatus(401);
     return;
   }
+
+  const rawBody = (request as ExtendRequest).rawBody?.toString() ??
+    JSON.stringify(request.body);
 
   const validationResult = webhookValidation({
     headerSignature: lineSignature,
