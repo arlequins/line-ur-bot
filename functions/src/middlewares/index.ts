@@ -1,5 +1,4 @@
-import {Request, Response} from "firebase-functions";
-import * as express from "express";
+import type {NextFunction, Request, Response} from "express";
 import {webhookValidation} from "../utils";
 import {VALUES} from "../constants";
 
@@ -10,7 +9,7 @@ interface ExtendRequest extends Request {
 const authenticate = (
   request: Request,
   response: Response,
-  next: express.NextFunction,
+  next: NextFunction,
 ): void => {
   const lineSignature = request.headers["x-line-signature"];
   const channelSecret = VALUES.channelSecret;

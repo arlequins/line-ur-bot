@@ -1,4 +1,4 @@
-import {Request, Response} from "firebase-functions";
+import type {Request, Response} from "express";
 import * as logger from "firebase-functions/logger";
 import {messagingApi, webhook} from "@line/bot-sdk";
 import lineApi from "../../services/line";
