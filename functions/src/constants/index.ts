@@ -37,13 +37,13 @@ export const VALUES = setValues();
 
 export const OPTIONS = {
   history: {
-    payloadRentHigh: 150000,
-    rentHigh: 150000,
+    payloadRentHigh: 90000,
+    rentHigh: 90000,
     rooms: ["1K", "1DK", "1LDK"],
   },
   lowcost: {
     year: 25,
-    rentHigh: 150000,
+    rentHigh: 90000,
     rooms: ["1DK", "1LDK"],
   },
 };
