@@ -66,7 +66,15 @@ export const secondOrderHouseIds: TypeUrHouseId[] = [
 
   "20_7150", // 台東区, コンフォール根岸, 1K・1DK/27㎡～40㎡, 78,700円～126,300円(6,600円), 34, 12年
 
-  "20_1660", // 江東区, 亀戸二丁目, 1LDK～3K/41㎡～55㎡, 84,600円～133,200円(3,700円), 806, 55年
+];
+
+// 品川駅へのJR通勤圏で、空室の発生を監視する物件
+export const commuteHouseIds: TypeUrHouseId[] = [
+  "20_1830", // 品川区, 大井六丁目
+  "40_1740", // 横浜市戸塚区, 前田町
+  "40_3120", // 横浜市戸塚区, コンフォール上倉田
+  "20_1660", // 江東区, 亀戸二丁目
+  "30_5910", // 市川市, ヴェルディール市川南
 ];
 
 export const tokyoHighHouseIds: TypeUrHouseId[] = [
@@ -107,4 +115,5 @@ export const kanagawaHouseIds: TypeUrHouseId[] = [
 export const targetHouseIds = [
   ...firstOrderHouseIds,
   ...secondOrderHouseIds,
+  ...commuteHouseIds,
 ];
