@@ -2,20 +2,20 @@ import {onRequest} from "firebase-functions/v2/https";
 import {onMessagePublished} from "firebase-functions/v2/pubsub";
 import {onSchedule} from "firebase-functions/v2/scheduler";
 import {ENV, LINE_SECRETS} from "./constants";
-import v1ApiHandler from "./controllers/v1/api";
-import * as v1BatchHandler from "./controllers/v1/batch";
+import lineWebhookApp from "./interfaces/http/line-app";
+import * as rentalJobs from "./interfaces/scheduler/rental-jobs";
 import {BATCH} from "./constants/batch";
 import {
   BILLING_ALERT_TOPIC,
   BudgetNotification,
   notifyBillingCost,
-} from "./handlers/billing";
+} from "./application/billing/notify-billing-cost";
 
-// The names intentionally differ from the 1st-generation functions. Deploy these
-// alongside the existing functions, then follow docs/functions-gen2-migration.md.
+// Public function names are kept stable so existing LINE and scheduler integrations
+// continue to work while the implementation evolves behind the interfaces layer.
 export const v2 = onRequest(
   {region: ENV.REGION, secrets: LINE_SECRETS},
-  v1ApiHandler
+  lineWebhookApp
 );
 
 export const batchFetchUrDataV2 = onSchedule(
@@ -26,7 +26,7 @@ export const batchFetchUrDataV2 = onSchedule(
     secrets: LINE_SECRETS,
     ...BATCH.runWith.fetchUrData,
   },
-  async () => await v1BatchHandler.fetchUrData()
+  rentalJobs.fetchUrData
 );
 
 export const batchFetchLowCostV2 = onSchedule(
@@ -37,7 +37,7 @@ export const batchFetchLowCostV2 = onSchedule(
     secrets: LINE_SECRETS,
     ...BATCH.runWith.fetchLowCost,
   },
-  async () => await v1BatchHandler.fetchLowCost()
+  rentalJobs.fetchLowCost
 );
 
 export const batchTransferBigQueryV2 = onSchedule(
@@ -48,7 +48,7 @@ export const batchTransferBigQueryV2 = onSchedule(
     secrets: LINE_SECRETS,
     ...BATCH.runWith.transferBigQuery,
   },
-  async () => await v1BatchHandler.transferBigQuery()
+  rentalJobs.transferBigQuery
 );
 
 export const billingCostAlertV2 = onMessagePublished<BudgetNotification>(

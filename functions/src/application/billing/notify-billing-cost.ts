@@ -1,9 +1,9 @@
 import * as logger from "firebase-functions/logger";
-import {VALUES} from "../constants";
-import {FIRESTORE_COLLECTION} from "../constants/db";
-import {db} from "../services/firebase";
-import lineApi from "../services/line";
-import {makeTextMessage} from "../utils/line";
+import {VALUES} from "../../constants";
+import {FIRESTORE_COLLECTION} from "../../constants/db";
+import {db} from "../../infrastructure/firebase/admin";
+import lineApi from "../../infrastructure/line/line-messaging";
+import {makeTextMessage} from "../../interfaces/line/message-factory";
 
 export const BILLING_ALERT_TOPIC = "billing-alerts";
 

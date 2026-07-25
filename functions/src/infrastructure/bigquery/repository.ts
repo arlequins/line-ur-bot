@@ -4,7 +4,7 @@ import {
   TableField,
   DatasetsResponse,
 } from "@google-cloud/bigquery";
-import bigQueryClient from "../../services/big-query";
+import bigQueryClient from "./client";
 import {
   BigDataset,
   PayloadCreateOrGetTable,

@@ -1,6 +1,6 @@
 import {LineBotClient, messagingApi} from "@line/bot-sdk";
 import {logger} from "firebase-functions/v1";
-import {VALUES} from "../constants";
+import {VALUES} from "../../constants";
 
 const client = LineBotClient.fromChannelAccessToken({
   channelAccessToken: VALUES.channelAccessToken,

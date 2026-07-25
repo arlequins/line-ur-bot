@@ -2,7 +2,7 @@ import {DocMasterHouse, DocRecord, TypeUrRoomPriceUpdatedTimestamp} from "../../
 import {
   TableRoomRecords,
 } from "../../types/big-query/schema";
-import {currentTimestamp, setDay} from "../date";
+import {currentTimestamp, setDay} from "../../utils/date";
 import {Dayjs} from "dayjs";
 
 export type ConvertKey = "masterHouses" | "masterRooms" | "roomRecords";

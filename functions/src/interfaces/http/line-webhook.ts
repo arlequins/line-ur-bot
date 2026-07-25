@@ -1,9 +1,9 @@
 import type {Request, Response} from "express";
 import * as logger from "firebase-functions/logger";
 import {messagingApi, webhook} from "@line/bot-sdk";
-import lineApi from "../../services/line";
-import {makeTextMessage} from "../../utils/line";
-import {processHistory, processLowcost} from "../../usecases/ur";
+import lineApi from "../../infrastructure/line/line-messaging";
+import {makeTextMessage} from "../line/message-factory";
+import {processHistory, processLowcost} from "../../application/rentals/monitor-rentals";
 import {VALUES} from "../../constants";
 
 const enum TRIGGER {
@@ -107,7 +107,7 @@ const processEvent = async (event: webhook.Event) => {
   }
 };
 
-export const main = async (
+export const handleLineWebhook = async (
   request: Request,
   response: Response
 ): Promise<void> => {

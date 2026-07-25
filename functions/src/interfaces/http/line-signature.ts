@@ -1,12 +1,12 @@
 import type {NextFunction, Request, Response} from "express";
-import {webhookValidation} from "../utils";
-import {VALUES} from "../constants";
+import {webhookValidation} from "../../utils";
+import {VALUES} from "../../constants";
 
 interface ExtendRequest extends Request {
   rawBody?: Buffer
 }
 
-const authenticate = (
+const verifyLineSignature = (
   request: Request,
   response: Response,
   next: NextFunction,
@@ -36,4 +36,4 @@ const authenticate = (
   next();
 };
 
-export default authenticate;
+export default verifyLineSignature;

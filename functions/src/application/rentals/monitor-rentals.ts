@@ -9,7 +9,7 @@ import {
   fetchAreaList,
   fetchLeadTimeList,
   fetchRoomList,
-} from "../../services/ur-api";
+} from "../../infrastructure/ur/ur-client";
 import {
   TypeUrRoom,
   TypeUrRoomPrice,
@@ -32,7 +32,7 @@ import {
   day,
   setDay,
 } from "../../utils/date";
-import {getDocument, setDocument} from "../../utils/db";
+import {getDocument, setDocument} from "../../infrastructure/firebase/firestore-repository";
 import {objectEqualLength} from "../../utils";
 import {
   makeLinkMessage,
@@ -40,7 +40,7 @@ import {
   makeHistoryFirstMessage,
   makeTextMessage,
   makeHistorySecondMessage,
-} from "../../utils/line";
+} from "../../interfaces/line/message-factory";
 import {messagingApi} from "@line/bot-sdk";
 import {
   ResponseLeadTime,
@@ -48,7 +48,7 @@ import {
   ResponseUrRoom,
 } from "../../types/api";
 import {OPTIONS} from "../../constants";
-import {saveMadoriImage} from "../../services/store";
+import {saveMadoriImage} from "../../infrastructure/firebase/storage";
 import {logger} from "firebase-functions/v1";
 import {Dayjs} from "dayjs";
 

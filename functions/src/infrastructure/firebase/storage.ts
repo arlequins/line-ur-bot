@@ -1,5 +1,5 @@
 import axios from "axios";
-import {bucket} from "./firebase";
+import {getBucket} from "./admin";
 import {logger} from "firebase-functions/v1";
 
 const prefixImagePath = "images";
@@ -13,7 +13,7 @@ const getBufferData = async (url: string) => {
 };
 
 const uploadFile = async (bufferData: Buffer, middle: string, dest: string) => {
-  await bucket
+  await getBucket()
     .file(`${prefixImagePath}/${middle}/${dest}`)
     .save(bufferData);
 };

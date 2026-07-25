@@ -1,8 +1,8 @@
 import {create, isAxiosError} from "axios";
 import {logger} from "firebase-functions/v1";
-import {UR_BASE_API_URL} from "../constants/ur";
-import {OPTIONS} from "../constants";
-import {PayloadUrAreaList, PayloadUrRoomList} from "../types/api";
+import {UR_BASE_API_URL} from "../../constants/ur";
+import {OPTIONS} from "../../constants";
+import {PayloadUrAreaList, PayloadUrRoomList} from "../../types/api";
 
 const instance = create({
   baseURL: UR_BASE_API_URL,
