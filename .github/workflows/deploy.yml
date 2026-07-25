@@ -14,9 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22.x
           cache: npm
@@ -25,11 +25,8 @@ jobs:
       - name: install
         run: cd functions && npm ci
 
-      - name: Make .env file
-        uses: SpicyPizza/create-envfile@v1.3
-        with:
-          directory: functions
-          envkey_ENVIRONMENT: ${{ vars.ENVIRONMENT }}
+      - name: Create non-secret environment file
+        run: printf 'ENVIRONMENT=%s\n' "${{ vars.ENVIRONMENT }}" > functions/.env
 
       - name: Deploy Functions
         uses: w9jds/firebase-action@v13.0.0
