@@ -36,7 +36,7 @@ import {getDocument, setDocument} from "../../utils/db";
 import {objectEqualLength} from "../../utils";
 import {
   makeLinkMessage,
-  makeLowcostMessage,
+  makeLowcostGalleryMessages,
   makeHistoryFirstMessage,
   makeTextMessage,
   makeHistorySecondMessage,
@@ -492,6 +492,7 @@ const filterLowcostList = (rawList: ResponseLeadTime[]) => {
         type: room.type, // "2DK";
         floorspace: room.floorspace, // "50&#13217;";
         floor: room.floor, // "1階";
+        url: room.roomLinkPc,
       }))
       .sort((a, b) => a.rents[0] - b.rents[0]);
 
@@ -561,7 +562,7 @@ export const processLowcost = async () => {
       },
     });
 
-    result.messages = [makeTextMessage(makeLowcostMessage(filterList))];
+    result.messages = makeLowcostGalleryMessages(filterList);
   } else {
     result.messages = [makeTextMessage("前回と同じです。")];
   }

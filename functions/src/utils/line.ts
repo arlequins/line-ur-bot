@@ -64,23 +64,100 @@ export const makeLinkMessage = (
   return str;
 };
 
-export const makeLowcostMessage = (
+const MAX_FLEX_BUBBLES = 12;
+
+const makeLowcostBubble = (
+  house: TypeUrFilterLowcost,
+  room: TypeUrFilterLowcost["rooms"][number],
+): messagingApi.FlexBubble => ({
+  type: "bubble",
+  size: "kilo",
+  body: {
+    type: "box",
+    layout: "vertical",
+    spacing: "sm",
+    contents: [
+      {
+        type: "text",
+        text: "最安値候補",
+        color: "#06C755",
+        size: "sm",
+        weight: "bold",
+      },
+      {
+        type: "text",
+        text: house.name,
+        weight: "bold",
+        size: "lg",
+        wrap: true,
+      },
+      {type: "separator", margin: "md"},
+      {
+        type: "text",
+        text: convertRentsToYen(room.rents).join("~"),
+        size: "xl",
+        weight: "bold",
+        color: "#111111",
+        margin: "md",
+      },
+      {
+        type: "text",
+        text: `共益費 ${convertRentToYen(room.commonfee)}`,
+        size: "sm",
+        color: "#777777",
+      },
+      {
+        type: "text",
+        text: `${room.name} · ${room.type}`,
+        size: "sm",
+        wrap: true,
+        margin: "md",
+      },
+      {
+        type: "text",
+        text: `${room.floorspace.replace("&#13217;", "㎡")} · ${room.floor}`,
+        size: "sm",
+        color: "#777777",
+      },
+    ],
+  },
+  footer: {
+    type: "box",
+    layout: "vertical",
+    contents: [
+      {
+        type: "button",
+        style: "primary",
+        color: "#06C755",
+        action: {
+          type: "uri",
+          label: "URで詳細を見る",
+          uri: `${UR_BASE_URL}${room.url}`,
+        },
+      },
+    ],
+  },
+});
+
+export const makeLowcostGalleryMessages = (
   filterList: TypeUrFilterLowcost[],
-): string => {
-  const lowHouse = filterList[0];
-  let str = `最安値：${convertRentsToYen(lowHouse.lowRents).join("~")}\n`;
-  str += `全体対象物件：${filterList.length}件\n`;
+): messagingApi.FlexMessage[] => {
+  const rooms = filterList.flatMap((house) =>
+    house.rooms.map((room) => ({house, room}))
+  );
+  const messages: messagingApi.FlexMessage[] = [];
 
-  for (const [index, house] of Object.entries(filterList)) {
-    const count = Number.parseInt(index) + 1;
-    str += "---------------------------\n";
-    str += `${house.name} - ${house.roomCount}個\n`;
-
-    for (const [innerIndex, room] of Object.entries(house.rooms)) {
-      const innerCount = Number.parseInt(innerIndex) + 1;
-      str += `${room.name}, ${room.type}, ${room.floor} - ${convertRentsToYen(room.rents).join("~")}${!(count === filterList.length && innerCount === house.rooms.length) ? "\n" : ""}`;
-    }
+  for (let index = 0; index < rooms.length; index += MAX_FLEX_BUBBLES) {
+    const page = rooms.slice(index, index + MAX_FLEX_BUBBLES);
+    messages.push({
+      type: "flex",
+      altText: `最安値物件 ${index + 1}〜${index + page.length}件 / 全${rooms.length}件`,
+      contents: {
+        type: "carousel",
+        contents: page.map(({house, room}) => makeLowcostBubble(house, room)),
+      },
+    });
   }
 
-  return str;
+  return messages;
 };

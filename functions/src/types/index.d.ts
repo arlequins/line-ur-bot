@@ -107,6 +107,7 @@ export type TypeUrFilterLowcost = {
     type: string // "2DK";
     floorspace: string // "50&#13217;";
     floor: string // "1階";
+    url: string // "/chintai/kanto/chiba/30_6000_room.html?JKSS=000170107"
   }[]
 }
 
