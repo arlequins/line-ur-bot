@@ -494,6 +494,7 @@ const filterLowcostList = (rawList: ResponseLeadTime[]) => {
         floor: room.floor, // "1階";
         url: room.roomLinkPc,
       }))
+      .filter((room) => room.rents.every((rent) => rent > 0))
       .sort((a, b) => a.rents[0] - b.rents[0]);
 
     if (!rooms.length) {
@@ -506,7 +507,7 @@ const filterLowcostList = (rawList: ResponseLeadTime[]) => {
       houseId: `${raw.shisya}_${raw.danchi}${raw.shikibetu}`,
       name: `${raw.danchiNm}`, // "コンフォール柏豊四季台";
       tdfk: `${raw.tdfk}`, // "chiba";
-      roomCount: Number.parseInt(raw.roomCount, 10),
+      roomCount: rooms.length,
       rooms: rooms,
       lowRents: lowHouse.rents,
       lowCommonfee: lowHouse.commonfee,
@@ -524,6 +525,7 @@ type LowcostAlertOptions = {
   title?: string;
   includes: (property: ResponseLeadTime) => boolean;
   maxRooms?: number;
+  onlyNewRooms?: boolean;
 };
 
 const limitLowcostRooms = (houses: TypeUrFilterLowcost[], maxRooms?: number) => {
@@ -547,12 +549,38 @@ const limitLowcostRooms = (houses: TypeUrFilterLowcost[], maxRooms?: number) => 
   });
 };
 
+const getNewlyAvailableRooms = (
+  current: TypeUrFilterLowcost[],
+  previous: TypeUrFilterLowcost[]
+) => {
+  const previousRoomKeys = new Set(
+    previous.flatMap((house) =>
+      house.rooms.map((room) => `${house.houseId}:${room.roomId}`)
+    )
+  );
+
+  return current.flatMap((house) => {
+    const rooms = house.rooms.filter(
+      (room) => !previousRoomKeys.has(`${house.houseId}:${room.roomId}`)
+    );
+
+    return rooms.length ? [{
+      ...house,
+      roomCount: rooms.length,
+      rooms,
+      lowRents: rooms[0].rents,
+      lowCommonfee: rooms[0].commonfee,
+    }] : [];
+  });
+};
+
 const processLowcostAlert = async ({
   search,
   historyId,
   title,
   includes,
   maxRooms,
+  onlyNewRooms = false,
 }: LowcostAlertOptions) => {
   const result = {
     messages: [] as messagingApi.Message[],
@@ -575,7 +603,7 @@ const processLowcostAlert = async ({
     maxRooms
   );
 
-  if (!filterList.length) {
+  if (!filterList.length && !onlyNewRooms) {
     result.messages = [makeTextMessage("条件に合う物件がないです。")];
     return result;
   }
@@ -586,8 +614,30 @@ const processLowcostAlert = async ({
     id: historyId,
   });
 
-  result.isNotSameStatus =
-    !historyLowcost ||
+  if (onlyNewRooms) {
+    const newRooms = historyLowcost ?
+      getNewlyAvailableRooms(filterList, historyLowcost.data) :
+      [];
+
+    await setDocument<DocHistoryLowcost>({
+      collection: FIRESTORE_COLLECTION.HISTORY,
+      id: historyId,
+      data: {
+        data: filterList,
+        timestamp: currentTimestamp(),
+      },
+    });
+
+    result.isNotSameStatus = newRooms.length > 0;
+    result.messages = newRooms.length ? [
+      ...(title ? [makeTextMessage(title)] : []),
+      ...makeLowcostGalleryMessages(newRooms),
+    ] : [];
+
+    return result;
+  }
+
+  result.isNotSameStatus = !historyLowcost ||
     (historyLowcost && !objectEqualLength(historyLowcost.data, filterList));
 
   if (result.isNotSameStatus) {
@@ -639,7 +689,8 @@ export const processShinjukuWest = async () =>
   await processLowcostAlert({
     search: OPTIONS.shinjukuWest,
     historyId: FIRESTORE_COLLECTION_HISTORY.SHINJUKU_WEST,
-    title: "新宿駅まで60分以内・家賃15万円以下（1K / 1DK / 1LDK）\n東京西部・埼玉・ニュータウン対象",
+    title: "新着空室：新宿駅まで60分以内・家賃15万円以下（1K / 1DK / 1LDK）\n東京西部・埼玉・ニュータウン対象",
     includes: isShinjukuWestSearchArea,
     maxRooms: 48,
+    onlyNewRooms: true,
   });

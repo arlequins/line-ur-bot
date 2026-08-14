@@ -88,7 +88,7 @@ The monitored properties and rental ceiling live in:
 
 The current maximum monthly rent for the property wishlist is ¥90,000. Scheduled rental checks run every 30 minutes from 09:00 through 20:59 in `Asia/Tokyo`.
 
-The lowest-price alerts run every 10 minutes from 09:00 through 18:59. In addition to the existing lowest-price search, a dedicated alert watches 1K, 1DK, and 1LDK vacancies at ¥150,000 or less that are within 60 minutes of Shinjuku. Its area scope is western Tokyo, Saitama, and selected new-town locations; a changed result is sent as a LINE Flex gallery.
+The lowest-price alerts run every 10 minutes from 09:00 through 18:59. In addition to the existing lowest-price search, a dedicated alert checks hourly for newly available 1K, 1DK, and 1LDK vacancies at ¥150,000 or less that are within 60 minutes of Shinjuku. Its area scope is western Tokyo, Saitama, and selected new-town locations. It only sends rooms that were absent during the preceding check, and ignores listings without a valid rent.
 
 ## Firebase billing alerts
 
