@@ -122,3 +122,42 @@ export const targetHouseIds = [
   ...secondOrderHouseIds,
   ...commuteHouseIds,
 ];
+
+export const shinjukuJrWatchAreas = [
+  {tdfk: "13", area: "06"}, // Tokyo municipalities
+  {tdfk: "11", area: "02"}, // Southern and central Saitama
+  {tdfk: "11", area: "04"}, // Western Saitama
+];
+
+// Fixed catalog watchlist. These properties remain monitored even when their
+// current vacancy count is zero.
+export const shinjukuJrWatchHouseIds: TypeUrHouseId[] = [
+  "20_5930", // シティコート立川曙町
+  "20_6210", // プラザシティ立川
+  "20_6440", // アートアベニュー立川
+  "20_6720", // アーバンライフ立川
+  "20_5010", // 府中グリーンハイツ
+  "20_5140", // プラザ新小金井
+  "20_6510", // 多摩平の森
+  "20_5400", // 西国分寺ゆかり壱番街
+  "20_5990", // 西国分寺ゆかり四番街
+  "20_6360", // 西国分寺ゆかり参番街
+  "20_6960", // 西国分寺ライフタワー
+  "20_1351", // 国立富士見台（36号棟）
+  "20_5210", // グリーンハイツ武蔵境通り
+  "50_3860", // コンフォール西本郷
+  "50_3940", // アーベイン大宮
+  "50_3270", // アーバンハイツ与野
+  "50_4130", // コンフォール西浦和田島
+  "50_2420", // 浦和別所ハイツ
+  "50_2550", // 武蔵浦和駅前ハイツ
+  "50_3931", // コンフォール南浦和
+  "50_1820", // 川口芝園
+  "50_2890", // リプレ川口二番街
+  "50_3040", // アーバンハイツ飯塚三丁目
+  "50_3890", // コンフォール川口飯塚
+  "50_4040", // シティコート川口
+  "50_4060", // アーバンラフレ戸田
+  "50_3750", // 戸田
+  "50_1700", // 朝霞浜崎
+];

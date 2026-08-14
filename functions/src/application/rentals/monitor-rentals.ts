@@ -4,7 +4,12 @@ import {
   FIRESTORE_COLLECTION_IMAGES,
   FIRESTORE_COLLECTION_MASTER,
 } from "../../constants/db";
-import {urAreaPrefs, targetHouseIds} from "../../constants/ur";
+import {
+  shinjukuJrWatchAreas,
+  shinjukuJrWatchHouseIds,
+  urAreaPrefs,
+  targetHouseIds,
+} from "../../constants/ur";
 import {
   fetchAreaList,
   fetchLeadTimeList,
@@ -521,7 +526,6 @@ type LowcostAlertOptions = {
   title?: string;
   includes: (property: ResponseLeadTime) => boolean;
   maxRooms?: number;
-  onlyNewRooms?: boolean;
 };
 
 const limitLowcostRooms = (houses: TypeUrFilterLowcost[], maxRooms?: number) => {
@@ -576,7 +580,6 @@ const processLowcostAlert = async ({
   title,
   includes,
   maxRooms,
-  onlyNewRooms = false,
 }: LowcostAlertOptions) => {
   const result = {
     messages: [] as messagingApi.Message[],
@@ -599,7 +602,7 @@ const processLowcostAlert = async ({
     maxRooms
   );
 
-  if (!filterList.length && !onlyNewRooms) {
+  if (!filterList.length) {
     result.messages = [makeTextMessage("条件に合う物件がないです。")];
     return result;
   }
@@ -609,29 +612,6 @@ const processLowcostAlert = async ({
     collection: FIRESTORE_COLLECTION.HISTORY,
     id: historyId,
   });
-
-  if (onlyNewRooms) {
-    const newRooms = historyLowcost ?
-      getNewlyAvailableRooms(filterList, historyLowcost.data) :
-      [];
-
-    await setDocument<DocHistoryLowcost>({
-      collection: FIRESTORE_COLLECTION.HISTORY,
-      id: historyId,
-      data: {
-        data: filterList,
-        timestamp: currentTimestamp(),
-      },
-    });
-
-    result.isNotSameStatus = newRooms.length > 0;
-    result.messages = newRooms.length ? [
-      ...(title ? [makeTextMessage(title)] : []),
-      ...makeLowcostGalleryMessages(newRooms),
-    ] : [];
-
-    return result;
-  }
 
   result.isNotSameStatus = !historyLowcost ||
     (historyLowcost && !objectEqualLength(historyLowcost.data, filterList));
@@ -664,27 +644,126 @@ export const processLowcost = async () =>
     includes: () => true,
   });
 
-// The UR search response exposes addresses only at municipality granularity. This
-// conservative set approximates a 20 km circle around Shinjuku Station, whose
-// western edge reaches roughly to Koganei City.
-const shinjukuKoganeiMunicipalities = [
-  "新宿区", "渋谷区", "中野区", "杉並区", "世田谷区", "練馬区",
-  "武蔵野市", "三鷹市", "調布市", "狛江市", "小金井市", "西東京市",
-  "東久留米市", "清瀬市", "小平市",
-  "和光市", "朝霞市", "新座市", "志木市", "戸田市", "蕨市", "川口市",
-];
+const shinjukuJrWatchHouseIdSet = new Set(shinjukuJrWatchHouseIds);
 
-const isShinjukuKoganeiSearchArea = (property: ResponseLeadTime) =>
-  shinjukuKoganeiMunicipalities.some((municipality) =>
-    property.place.startsWith(municipality)
+const loadShinjukuJrWatchlist = async (): Promise<TypeUrFilterLowcost[] | null> => {
+  const areaResponses = await Promise.all(
+    shinjukuJrWatchAreas.map(async ({tdfk, area}) => ({
+      tdfk,
+      houses: await fetchAreaList<ResponseUrHouse[]>({
+        rent_low: "",
+        rent_high: "",
+        floorspace_low: "",
+        floorspace_high: "",
+        tdfk,
+        area,
+      }),
+    }))
   );
 
-export const processShinjukuWest = async () =>
-  await processLowcostAlert({
-    search: OPTIONS.shinjukuWest,
-    historyId: FIRESTORE_COLLECTION_HISTORY.SHINJUKU_WEST,
-    title: "新着空室：新宿駅から約20km圏内・家賃15万円以下（1K / 1DK / 1LDK）\n小金井市程度までの東京西部・近隣埼玉対象",
-    includes: isShinjukuKoganeiSearchArea,
-    maxRooms: 48,
-    onlyNewRooms: true,
+  if (areaResponses.some(({houses}) => houses === null)) {
+    return null;
+  }
+
+  const availableHouses = areaResponses.flatMap(({tdfk, houses}) =>
+    (houses ?? [])
+      .filter((house) =>
+        house.roomCount > 0 && shinjukuJrWatchHouseIdSet.has(house.id)
+      )
+      .map((house) => ({tdfk, house}))
+  );
+
+  const roomResponses = await Promise.all(
+    availableHouses.map(async ({tdfk, house}) => ({
+      tdfk,
+      house,
+      rooms: await fetchRoomList<ResponseUrRoom[]>({
+        rent_low: "",
+        rent_high: `${OPTIONS.shinjukuJr.rentHigh}`,
+        floorspace_low: "",
+        floorspace_high: "",
+        mode: "init",
+        id: house.id,
+        tdfk,
+      }),
+    }))
+  );
+
+  if (roomResponses.some(({rooms}) => rooms === null)) {
+    return null;
+  }
+
+  return roomResponses.flatMap(({tdfk, house, rooms: responseRooms}) => {
+    const rooms = (responseRooms ?? [])
+      .filter((room) =>
+        OPTIONS.shinjukuJr.rooms.includes(room.type) &&
+        !room.floor.startsWith("1階")
+      )
+      .map((room) => ({
+        roomId: room.id,
+        rents: convertRent(room.rent),
+        commonfee: convertCommonfee(room.commonfee),
+        name: room.name,
+        type: room.type,
+        floorspace: room.floorspace,
+        floor: room.floor,
+        url: room.urlDetail,
+      }))
+      .filter((room) => room.rents.every((rent) => rent > 0))
+      .sort((a, b) => a.rents[0] - b.rents[0]);
+
+    if (!rooms.length) {
+      return [];
+    }
+
+    return [{
+      houseId: house.id,
+      name: house.name,
+      tdfk,
+      roomCount: rooms.length,
+      rooms,
+      lowRents: rooms[0].rents,
+      lowCommonfee: rooms[0].commonfee,
+    }];
+  }).sort((a, b) => a.lowRents[0] - b.lowRents[0]);
+};
+
+export const processShinjukuWest = async () => {
+  const result = {
+    messages: [] as messagingApi.Message[],
+    isNotSameStatus: false,
+  };
+  const current = await loadShinjukuJrWatchlist();
+
+  if (current === null) {
+    return result;
+  }
+
+  const filterList = limitLowcostRooms(current, 48);
+  const history = await getDocument<DocHistoryLowcost>({
+    collection: FIRESTORE_COLLECTION.HISTORY,
+    id: FIRESTORE_COLLECTION_HISTORY.SHINJUKU_JR,
   });
+  const newRooms = history ? getNewlyAvailableRooms(filterList, history.data) : [];
+
+  await setDocument<DocHistoryLowcost>({
+    collection: FIRESTORE_COLLECTION.HISTORY,
+    id: FIRESTORE_COLLECTION_HISTORY.SHINJUKU_JR,
+    data: {
+      data: filterList,
+      timestamp: currentTimestamp(),
+    },
+  });
+
+  if (newRooms.length) {
+    result.isNotSameStatus = true;
+    result.messages = [
+      makeTextMessage(
+        "新着空室：家賃15万円以下（1K / 1DK / 1LDK）\nJR徒歩15分圏・管理50年以内・2階以上"
+      ),
+      ...makeLowcostGalleryMessages(newRooms),
+    ];
+  }
+
+  return result;
+};

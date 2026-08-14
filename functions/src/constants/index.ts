@@ -64,14 +64,8 @@ export const OPTIONS = {
     prefectureCodes: ["13", "14", "12"],
     requiresUnderfloorHeating: true,
   },
-  shinjukuWest: {
-    year: "",
+  shinjukuJr: {
     rentHigh: 150000,
     rooms: ["1K", "1DK", "1LDK"],
-    destinationStationCode: "2334", // 新宿
-    maximumTravelMinutes: 60,
-    maximumTransfers: 5,
-    maximumPages: 5,
-    prefectureCodes: ["13", "11", "12"],
-  } satisfies LeadTimeSearchOptions,
+  },
 };

@@ -13,7 +13,7 @@ export const enum FIRESTORE_COLLECTION_MASTER {
 export const enum FIRESTORE_COLLECTION_HISTORY {
   RECENT = "recent",
   LOWCOST = "lowcost",
-  SHINJUKU_WEST = "shinjuku-west",
+  SHINJUKU_JR = "shinjuku-jr",
 }
 
 export const enum FIRESTORE_COLLECTION_IMAGES {
