@@ -668,29 +668,27 @@ export const processLowcost = async () =>
     includes: () => true,
   });
 
-const westTokyoMunicipalities = [
+// The UR search response exposes addresses only at municipality granularity. This
+// conservative set approximates a 20 km circle around Shinjuku Station, whose
+// western edge reaches roughly to Koganei City.
+const shinjukuKoganeiMunicipalities = [
   "新宿区", "渋谷区", "中野区", "杉並区", "世田谷区", "練馬区",
-  "八王子市", "立川市", "武蔵野市", "三鷹市", "青梅市", "府中市",
-  "昭島市", "調布市", "町田市", "小金井市", "小平市", "日野市",
-  "東村山市", "国分寺市", "国立市", "福生市", "狛江市", "東大和市",
-  "清瀬市", "東久留米市", "武蔵村山市", "多摩市", "稲城市", "羽村市",
-  "あきる野市", "西東京市", "西多摩郡",
+  "武蔵野市", "三鷹市", "調布市", "狛江市", "小金井市", "西東京市",
+  "東久留米市", "清瀬市", "小平市",
+  "和光市", "朝霞市", "新座市", "志木市", "戸田市", "蕨市", "川口市",
 ];
 
-const chibaNewTownMunicipalities = ["印西市", "白井市", "船橋市小室"];
-
-const isShinjukuWestSearchArea = (property: ResponseLeadTime) =>
-  property.tdfk === "saitama" ||
-  property.danchiNm.includes("ニュータウン") ||
-  westTokyoMunicipalities.some((municipality) => property.place.startsWith(municipality)) ||
-  chibaNewTownMunicipalities.some((municipality) => property.place.startsWith(municipality));
+const isShinjukuKoganeiSearchArea = (property: ResponseLeadTime) =>
+  shinjukuKoganeiMunicipalities.some((municipality) =>
+    property.place.startsWith(municipality)
+  );
 
 export const processShinjukuWest = async () =>
   await processLowcostAlert({
     search: OPTIONS.shinjukuWest,
     historyId: FIRESTORE_COLLECTION_HISTORY.SHINJUKU_WEST,
-    title: "新着空室：新宿駅まで60分以内・家賃15万円以下（1K / 1DK / 1LDK）\n東京西部・埼玉・ニュータウン対象",
-    includes: isShinjukuWestSearchArea,
+    title: "新着空室：新宿駅から約20km圏内・家賃15万円以下（1K / 1DK / 1LDK）\n小金井市程度までの東京西部・近隣埼玉対象",
+    includes: isShinjukuKoganeiSearchArea,
     maxRooms: 48,
     onlyNewRooms: true,
   });
