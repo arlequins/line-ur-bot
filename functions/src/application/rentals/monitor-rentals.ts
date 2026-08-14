@@ -463,17 +463,13 @@ export const processHistory = async (isOverride = false) => {
       },
     });
 
-    const messages = filteredUrData.length ?
-      [
+    if (filteredUrData.length) {
+      result.messages = [
+        makeTextMessage(makeHistoryFirstMessage(filteredUrData)),
         makeTextMessage(makeHistorySecondMessage(filteredUrData)),
         makeTextMessage(makeLinkMessage(filteredUrData)),
-      ] :
-      [];
-
-    result.messages = [
-      makeTextMessage(makeHistoryFirstMessage(filteredUrData)),
-      ...messages,
-    ];
+      ];
+    }
   }
 
   return result;
