@@ -47,7 +47,7 @@ import {
   ResponseUrHouse,
   ResponseUrRoom,
 } from "../../types/api";
-import {OPTIONS} from "../../constants";
+import {LeadTimeSearchOptions, OPTIONS} from "../../constants";
 import {saveMadoriImage} from "../../infrastructure/firebase/storage";
 import {logger} from "firebase-functions/v1";
 import {Dayjs} from "dayjs";
@@ -518,13 +518,48 @@ const filterLowcostList = (rawList: ResponseLeadTime[]) => {
     .sort((a, b) => a.lowRents[0] - b.lowRents[0]);
 };
 
-export const processLowcost = async () => {
+type LowcostAlertOptions = {
+  search: LeadTimeSearchOptions;
+  historyId: FIRESTORE_COLLECTION_HISTORY;
+  title?: string;
+  includes: (property: ResponseLeadTime) => boolean;
+  maxRooms?: number;
+};
+
+const limitLowcostRooms = (houses: TypeUrFilterLowcost[], maxRooms?: number) => {
+  if (!maxRooms) {
+    return houses;
+  }
+
+  let remainingRooms = maxRooms;
+
+  return houses.flatMap((house) => {
+    const rooms = house.rooms.slice(0, remainingRooms);
+    remainingRooms -= rooms.length;
+
+    return rooms.length ? [{
+      ...house,
+      roomCount: rooms.length,
+      rooms,
+      lowRents: rooms[0].rents,
+      lowCommonfee: rooms[0].commonfee,
+    }] : [];
+  });
+};
+
+const processLowcostAlert = async ({
+  search,
+  historyId,
+  title,
+  includes,
+  maxRooms,
+}: LowcostAlertOptions) => {
   const result = {
     messages: [] as messagingApi.Message[],
     isNotSameStatus: false,
   };
 
-  const list = await fetchLeadTimeList<ResponseLeadTime[]>();
+  const list = await fetchLeadTimeList(search);
 
   if (!list) {
     result.messages = [
@@ -535,7 +570,10 @@ export const processLowcost = async () => {
     return result;
   }
 
-  const filterList = filterLowcostList(list);
+  const filterList = limitLowcostRooms(
+    filterLowcostList(list.filter(includes)),
+    maxRooms
+  );
 
   if (!filterList.length) {
     result.messages = [makeTextMessage("条件に合う物件がないです。")];
@@ -545,7 +583,7 @@ export const processLowcost = async () => {
   // compare previous push
   const historyLowcost = await getDocument<DocHistoryLowcost>({
     collection: FIRESTORE_COLLECTION.HISTORY,
-    id: FIRESTORE_COLLECTION_HISTORY.LOWCOST,
+    id: historyId,
   });
 
   result.isNotSameStatus =
@@ -555,17 +593,53 @@ export const processLowcost = async () => {
   if (result.isNotSameStatus) {
     await setDocument<DocHistoryLowcost>({
       collection: FIRESTORE_COLLECTION.HISTORY,
-      id: FIRESTORE_COLLECTION_HISTORY.LOWCOST,
+      id: historyId,
       data: {
         data: filterList,
         timestamp: currentTimestamp(),
       },
     });
 
-    result.messages = makeLowcostGalleryMessages(filterList);
+    result.messages = [
+      ...(title ? [makeTextMessage(title)] : []),
+      ...makeLowcostGalleryMessages(filterList),
+    ];
   } else {
     result.messages = [makeTextMessage("前回と同じです。")];
   }
 
   return result;
 };
+
+export const processLowcost = async () =>
+  await processLowcostAlert({
+    search: OPTIONS.lowcost,
+    historyId: FIRESTORE_COLLECTION_HISTORY.LOWCOST,
+    includes: () => true,
+  });
+
+const westTokyoMunicipalities = [
+  "新宿区", "渋谷区", "中野区", "杉並区", "世田谷区", "練馬区",
+  "八王子市", "立川市", "武蔵野市", "三鷹市", "青梅市", "府中市",
+  "昭島市", "調布市", "町田市", "小金井市", "小平市", "日野市",
+  "東村山市", "国分寺市", "国立市", "福生市", "狛江市", "東大和市",
+  "清瀬市", "東久留米市", "武蔵村山市", "多摩市", "稲城市", "羽村市",
+  "あきる野市", "西東京市", "西多摩郡",
+];
+
+const chibaNewTownMunicipalities = ["印西市", "白井市", "船橋市小室"];
+
+const isShinjukuWestSearchArea = (property: ResponseLeadTime) =>
+  property.tdfk === "saitama" ||
+  property.danchiNm.includes("ニュータウン") ||
+  westTokyoMunicipalities.some((municipality) => property.place.startsWith(municipality)) ||
+  chibaNewTownMunicipalities.some((municipality) => property.place.startsWith(municipality));
+
+export const processShinjukuWest = async () =>
+  await processLowcostAlert({
+    search: OPTIONS.shinjukuWest,
+    historyId: FIRESTORE_COLLECTION_HISTORY.SHINJUKU_WEST,
+    title: "新宿駅まで60分以内・家賃15万円以下（1K / 1DK / 1LDK）\n東京西部・埼玉・ニュータウン対象",
+    includes: isShinjukuWestSearchArea,
+    maxRooms: 48,
+  });

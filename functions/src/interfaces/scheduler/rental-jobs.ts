@@ -1,5 +1,9 @@
 import * as logger from "firebase-functions/logger";
-import {processHistory, processLowcost} from "../../application/rentals/monitor-rentals";
+import {
+  processHistory,
+  processLowcost,
+  processShinjukuWest,
+} from "../../application/rentals/monitor-rentals";
 import lineApi from "../../infrastructure/line/line-messaging";
 import {VALUES} from "../../constants";
 import {processTransferTable} from "../../application/analytics/transfer-rental-history";
@@ -36,6 +40,25 @@ export const fetchLowCost = async (): Promise<void> => {
     logger.info({
       messageCount: messages.length,
       status: "batch fetchLowCost done",
+    });
+  } catch (error) {
+    logger.error(error);
+    throw error;
+  }
+};
+
+export const fetchShinjukuWest = async (): Promise<void> => {
+  try {
+    const lowcost = await processShinjukuWest();
+    const messages = lowcost.messages;
+
+    if (lowcost.isNotSameStatus && messages.length) {
+      await lineApi.pushMessage(VALUES.linePushUserId, messages);
+    }
+
+    logger.info({
+      messageCount: messages.length,
+      status: "batch fetchShinjukuWest done",
     });
   } catch (error) {
     logger.error(error);

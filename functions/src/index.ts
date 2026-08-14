@@ -40,6 +40,17 @@ export const batchFetchLowCostV2 = onSchedule(
   rentalJobs.fetchLowCost
 );
 
+export const batchFetchShinjukuWestV2 = onSchedule(
+  {
+    region: ENV.REGION,
+    schedule: BATCH.schedule.fetchShinjukuWest,
+    timeZone: ENV.TIMEZONE,
+    secrets: LINE_SECRETS,
+    ...BATCH.runWith.fetchShinjukuWest,
+  },
+  rentalJobs.fetchShinjukuWest
+);
+
 export const batchTransferBigQueryV2 = onSchedule(
   {
     region: ENV.REGION,
