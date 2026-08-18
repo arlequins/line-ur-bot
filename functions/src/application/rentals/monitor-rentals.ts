@@ -5,8 +5,8 @@ import {
   FIRESTORE_COLLECTION_MASTER,
 } from "../../constants/db";
 import {
-  shinjukuJrWatchAreas,
-  shinjukuJrWatchHouseIds,
+  rentalWatchAreas,
+  rentalWatchHouseIds,
   urAreaPrefs,
   targetHouseIds,
 } from "../../constants/ur";
@@ -644,11 +644,11 @@ export const processLowcost = async () =>
     includes: () => true,
   });
 
-const shinjukuJrWatchHouseIdSet = new Set(shinjukuJrWatchHouseIds);
+const rentalWatchHouseIdSet = new Set(rentalWatchHouseIds);
 
-const loadShinjukuJrWatchlist = async (): Promise<TypeUrFilterLowcost[] | null> => {
+const loadRentalWatchlist = async (): Promise<TypeUrFilterLowcost[] | null> => {
   const areaResponses = await Promise.all(
-    shinjukuJrWatchAreas.map(async ({tdfk, area}) => ({
+    rentalWatchAreas.map(async ({tdfk, area}) => ({
       tdfk,
       houses: await fetchAreaList<ResponseUrHouse[]>({
         rent_low: "",
@@ -668,7 +668,7 @@ const loadShinjukuJrWatchlist = async (): Promise<TypeUrFilterLowcost[] | null> 
   const availableHouses = areaResponses.flatMap(({tdfk, houses}) =>
     (houses ?? [])
       .filter((house) =>
-        house.roomCount > 0 && shinjukuJrWatchHouseIdSet.has(house.id)
+        house.roomCount > 0 && rentalWatchHouseIdSet.has(house.id)
       )
       .map((house) => ({tdfk, house}))
   );
@@ -733,24 +733,26 @@ export const processShinjukuWest = async () => {
     messages: [] as messagingApi.Message[],
     isNotSameStatus: false,
   };
-  const current = await loadShinjukuJrWatchlist();
+  const current = await loadRentalWatchlist();
 
   if (current === null) {
     return result;
   }
 
-  const filterList = limitLowcostRooms(current, 48);
   const history = await getDocument<DocHistoryLowcost>({
     collection: FIRESTORE_COLLECTION.HISTORY,
-    id: FIRESTORE_COLLECTION_HISTORY.SHINJUKU_JR,
+    id: FIRESTORE_COLLECTION_HISTORY.COMMUTE_WATCH_V2,
   });
-  const newRooms = history ? getNewlyAvailableRooms(filterList, history.data) : [];
+  const newRooms = history ? limitLowcostRooms(
+    getNewlyAvailableRooms(current, history.data),
+    48
+  ) : [];
 
   await setDocument<DocHistoryLowcost>({
     collection: FIRESTORE_COLLECTION.HISTORY,
-    id: FIRESTORE_COLLECTION_HISTORY.SHINJUKU_JR,
+    id: FIRESTORE_COLLECTION_HISTORY.COMMUTE_WATCH_V2,
     data: {
-      data: filterList,
+      data: current,
       timestamp: currentTimestamp(),
     },
   });
@@ -759,7 +761,7 @@ export const processShinjukuWest = async () => {
     result.isNotSameStatus = true;
     result.messages = [
       makeTextMessage(
-        "新着空室：家賃15万円以下（1K / 1DK / 1LDK）\nJR徒歩15分圏・管理50年以内・2階以上"
+        "新着空室：家賃15万円以下（1K / 1DK / 1LDK）\n新宿JR通勤圏＋品川60分圏・管理50年以内・2階以上"
       ),
       ...makeLowcostGalleryMessages(newRooms),
     ];
