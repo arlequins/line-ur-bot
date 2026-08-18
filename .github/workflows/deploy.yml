@@ -18,7 +18,7 @@ jobs:
 
       - uses: actions/setup-node@v5
         with:
-          node-version: 22.x
+          node-version: 24.x
           cache: npm
           cache-dependency-path: functions/package-lock.json
 
@@ -29,7 +29,7 @@ jobs:
         run: printf 'ENVIRONMENT=%s\n' "${{ vars.ENVIRONMENT }}" > functions/.env
 
       - name: Deploy Functions
-        uses: w9jds/firebase-action@v13.0.0
+        uses: w9jds/firebase-action@v15.27.0
         with:
           args: deploy --project ${{ vars.FIREBASE_PROJECT_ID }}
         env:

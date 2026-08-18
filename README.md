@@ -29,7 +29,7 @@ Firebase entry points are intentionally thin. They only configure a trigger and 
 
 ## Prerequisites
 
-- Node.js 22
+- Node.js 24
 - Firebase CLI
 - A Firebase project with Firestore, Cloud Functions, Cloud Scheduler, Pub/Sub, Secret Manager, Cloud Storage, and BigQuery enabled
 - A LINE Messaging API channel
