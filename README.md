@@ -8,7 +8,7 @@
 - Sends LINE push notifications when selected properties have matching vacancies.
 - Responds to LINE commands for an on-demand status check.
 - Sends the lowest-price search results as a swipeable LINE Flex Message gallery.
-- Runs scheduled Firebase Functions (2nd Gen) jobs for rental checks and BigQuery exports.
+- Runs one cost-controlled Firebase Functions (2nd Gen) vacancy schedule.
 - Receives budget notifications through Pub/Sub and sends a LINE alert when Firebase billing reaches ¥1 or more.
 
 ## Architecture
@@ -31,7 +31,7 @@ Firebase entry points are intentionally thin. They only configure a trigger and 
 
 - Node.js 24
 - Firebase CLI
-- A Firebase project with Firestore, Cloud Functions, Cloud Scheduler, Pub/Sub, Secret Manager, Cloud Storage, and BigQuery enabled
+- A Firebase project with Firestore, Cloud Functions, Cloud Scheduler, Pub/Sub, Secret Manager, and Cloud Storage enabled
 - A LINE Messaging API channel
 
 ## Local setup
@@ -86,9 +86,13 @@ The monitored properties and rental ceiling live in:
 - `functions/src/constants/ur.ts` — property wishlist
 - `functions/src/constants/index.ts` — maximum rent and room preferences
 
-The current maximum monthly rent for the property wishlist is ¥90,000. Scheduled rental checks run every 30 minutes from 09:00 through 20:59 in `Asia/Tokyo`.
+The current maximum monthly rent for the property wishlist is ¥90,000. General rental-history and lowest-price searches remain available through LINE commands but are not run on a schedule.
 
-The lowest-price alerts run every 10 minutes from 09:00 through 18:59. In addition to the existing lowest-price search, a dedicated alert checks a fixed catalog watchlist every hour, including properties with no current vacancies. The catalog combines the existing western Tokyo/Saitama JR watchlist with Tokyo properties whose published train and property-access time from Shinagawa is no more than 60 minutes. It supports 1K, 1DK, or 1LDK layouts, excludes properties managed for more than 50 years, and preserves explicitly preferred catalog entries. Runtime notifications are limited to rooms at ¥150,000 or less above the first floor. The first check after a catalog revision establishes a silent baseline; subsequent checks only send rooms that were absent during the preceding check.
+A dedicated alert checks the fixed catalog at 09:00, 13:00, and 17:00 in `Asia/Tokyo`, including properties with no current vacancies. The catalog combines the existing western Tokyo/Saitama JR watchlist with Tokyo properties whose published train and property-access time from Shinagawa is no more than 60 minutes. It supports 1K, 1DK, or 1LDK layouts, excludes properties managed for more than 50 years, and preserves explicitly preferred catalog entries. Runtime notifications are limited to rooms at ¥150,000 or less above the first floor. The first check after a catalog revision establishes a silent baseline; subsequent checks only send rooms that were absent during the preceding check.
+
+## Cost controls
+
+Production keeps one Cloud Scheduler job and runs it about 90 times in a 30-day month. The previous general history, lowest-price, and BigQuery export schedules are disabled; their application code remains available for on-demand use or future reactivation. Every deployed function is capped at one instance, billing-alert delivery does not retry indefinitely, and deployment artifacts expire after one day. At the published Google Cloud free-tier limits, the expected incremental monthly cost for this workload is $0, provided the billing account's shared free quotas are not already consumed by other projects and retained data does not independently exceed a storage free tier.
 
 ## Firebase billing alerts
 
