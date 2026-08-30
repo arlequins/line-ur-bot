@@ -68,4 +68,3 @@ node_modules/
 # ignore
 node_modules
 .firebaserc
-package-lock.json

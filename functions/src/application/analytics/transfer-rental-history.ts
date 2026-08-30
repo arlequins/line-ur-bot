@@ -3,13 +3,13 @@ import {
   createOrGetTable,
   insertRows,
   setBigQueryDataset,
-} from "../../utils/big-query";
+} from "../../infrastructure/bigquery/repository";
 import {PayloadCreateOrGetTable} from "../../types/big-query";
-import converter, {TypeConvertPayload} from "../../utils/big-query/converter";
+import converter, {TypeConvertPayload} from "./rental-history-converter";
 import {TableRoomRecords} from "../../types/big-query/schema";
 import {tableInfo} from "../../constants/big-query";
 import {DocMasterHouse, DocRecord} from "../../types";
-import {getDocument, getDocuments} from "../../utils/db";
+import {getDocument, getDocuments} from "../../infrastructure/firebase/firestore-repository";
 import {FIRESTORE_COLLECTION, FIRESTORE_COLLECTION_MASTER} from "../../constants/db";
 
 const makeTable = async (schema: PayloadCreateOrGetTable, isResetTable = false) => {

@@ -1,27 +1,26 @@
-import {Request, Response} from "firebase-functions";
-import * as express from "express";
-import {webhookValidation} from "../utils";
-import {VALUES} from "../constants";
+import type {NextFunction, Request, Response} from "express";
+import {webhookValidation} from "../../utils";
+import {VALUES} from "../../constants";
 
 interface ExtendRequest extends Request {
-  rawBody: Buffer
+  rawBody?: Buffer
 }
 
-const authenticate = (
+const verifyLineSignature = (
   request: Request,
   response: Response,
-  next: express.NextFunction,
+  next: NextFunction,
 ): void => {
-  response.set("Access-Control-Allow-Origin", "*");
-
   const lineSignature = request.headers["x-line-signature"];
-  const rawBody = (request as ExtendRequest).rawBody.toString();
   const channelSecret = VALUES.channelSecret;
 
   if (!lineSignature || Array.isArray(lineSignature) || !channelSecret) {
     response.sendStatus(401);
     return;
   }
+
+  const rawBody = (request as ExtendRequest).rawBody?.toString() ??
+    JSON.stringify(request.body);
 
   const validationResult = webhookValidation({
     headerSignature: lineSignature,
@@ -37,4 +36,4 @@ const authenticate = (
   next();
 };
 
-export default authenticate;
+export default verifyLineSignature;

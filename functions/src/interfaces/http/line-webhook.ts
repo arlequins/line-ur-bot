@@ -1,9 +1,9 @@
-import {Request, Response} from "firebase-functions";
+import type {Request, Response} from "express";
 import * as logger from "firebase-functions/logger";
-import {Message, WebhookEvent, WebhookRequestBody} from "@line/bot-sdk";
-import lineApi from "../../services/line";
-import {makeTextMessage} from "../../utils/line";
-import {processHistory, processLowcost} from "../../usecases/ur";
+import {messagingApi, webhook} from "@line/bot-sdk";
+import lineApi from "../../infrastructure/line/line-messaging";
+import {makeTextMessage} from "../line/message-factory";
+import {processHistory, processLowcost} from "../../application/rentals/monitor-rentals";
 import {VALUES} from "../../constants";
 
 const enum TRIGGER {
@@ -37,19 +37,29 @@ const setProcessResultText = (
   }
 };
 
-const processEvent = async (event: WebhookEvent) => {
+const processEvent = async (event: webhook.Event) => {
   const result = {
-    messages: [] as Message[],
+    messages: [] as messagingApi.Message[],
   };
 
   logger.log({
     type: "processEvent",
-    event,
+    webhookEventId: event.webhookEventId,
+    eventType: event.type,
   });
 
-  if (event.type === "message") {
+  if (event.type === "message" && event.replyToken) {
+    if (event.source?.type !== "user") {
+      logger.info({
+        type: "ignoredEvent",
+        reason: "unsupportedSource",
+        webhookEventId: event.webhookEventId,
+      });
+      return;
+    }
+
     // check line user id
-    if (event.source.type === "user" && event.source.userId !== VALUES.linePushUserId) {
+    if (event.source.userId !== VALUES.linePushUserId) {
       result.messages = [
         makeTextMessage(
           "登録されているユーザーのリクエストではないです。"
@@ -97,14 +107,14 @@ const processEvent = async (event: WebhookEvent) => {
   }
 };
 
-export const main = async (
+export const handleLineWebhook = async (
   request: Request,
   response: Response
 ): Promise<void> => {
-  const body: WebhookRequestBody = request.body;
+  const body: webhook.CallbackRequest = request.body;
   logger.log({
     type: "main",
-    body,
+    eventCount: body.events.length,
   });
 
   const events = body.events;
@@ -120,9 +130,10 @@ export const main = async (
       message: "error",
       status: 500,
     });
+    return;
   }
 
-  response.send({
+  response.status(200).json({
     status: "stand-by",
   });
 };

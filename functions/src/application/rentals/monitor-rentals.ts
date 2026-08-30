@@ -4,12 +4,17 @@ import {
   FIRESTORE_COLLECTION_IMAGES,
   FIRESTORE_COLLECTION_MASTER,
 } from "../../constants/db";
-import {urAreaPrefs, targetHouseIds} from "../../constants/ur";
+import {
+  rentalWatchAreas,
+  rentalWatchHouseIds,
+  urAreaPrefs,
+  targetHouseIds,
+} from "../../constants/ur";
 import {
   fetchAreaList,
   fetchLeadTimeList,
   fetchRoomList,
-} from "../../services/ur-api";
+} from "../../infrastructure/ur/ur-client";
 import {
   TypeUrRoom,
   TypeUrRoomPrice,
@@ -32,23 +37,23 @@ import {
   day,
   setDay,
 } from "../../utils/date";
-import {getDocument, setDocument} from "../../utils/db";
+import {getDocument, setDocument} from "../../infrastructure/firebase/firestore-repository";
 import {objectEqualLength} from "../../utils";
 import {
   makeLinkMessage,
-  makeLowcostMessage,
+  makeLowcostGalleryMessages,
   makeHistoryFirstMessage,
   makeTextMessage,
   makeHistorySecondMessage,
-} from "../../utils/line";
-import {Message} from "@line/bot-sdk";
+} from "../../interfaces/line/message-factory";
+import {messagingApi} from "@line/bot-sdk";
 import {
   ResponseLeadTime,
   ResponseUrHouse,
   ResponseUrRoom,
 } from "../../types/api";
-import {OPTIONS} from "../../constants";
-import {saveMadoriImage} from "../../services/store";
+import {LeadTimeSearchOptions, OPTIONS} from "../../constants";
+import {saveMadoriImage} from "../../infrastructure/firebase/storage";
 import {logger} from "firebase-functions/v1";
 import {Dayjs} from "dayjs";
 
@@ -408,7 +413,7 @@ const mergeRecords = (current: TypeUrRoomPrice[], prevDoc?: DocRecord) => {
 
 export const processHistory = async (isOverride = false) => {
   const result = {
-    messages: [] as Message[],
+    messages: [] as messagingApi.Message[],
     isNotSameStatus: false,
   };
 
@@ -463,17 +468,13 @@ export const processHistory = async (isOverride = false) => {
       },
     });
 
-    const messages = filteredUrData.length ?
-      [
+    if (filteredUrData.length) {
+      result.messages = [
+        makeTextMessage(makeHistoryFirstMessage(filteredUrData)),
         makeTextMessage(makeHistorySecondMessage(filteredUrData)),
         makeTextMessage(makeLinkMessage(filteredUrData)),
-      ] :
-      [];
-
-    result.messages = [
-      makeTextMessage(makeHistoryFirstMessage(filteredUrData)),
-      ...messages,
-    ];
+      ];
+    }
   }
 
   return result;
@@ -492,7 +493,9 @@ const filterLowcostList = (rawList: ResponseLeadTime[]) => {
         type: room.type, // "2DK";
         floorspace: room.floorspace, // "50&#13217;";
         floor: room.floor, // "1階";
+        url: room.roomLinkPc,
       }))
+      .filter((room) => room.rents.every((rent) => rent > 0))
       .sort((a, b) => a.rents[0] - b.rents[0]);
 
     if (!rooms.length) {
@@ -505,7 +508,7 @@ const filterLowcostList = (rawList: ResponseLeadTime[]) => {
       houseId: `${raw.shisya}_${raw.danchi}${raw.shikibetu}`,
       name: `${raw.danchiNm}`, // "コンフォール柏豊四季台";
       tdfk: `${raw.tdfk}`, // "chiba";
-      roomCount: Number.parseInt(raw.roomCount, 10),
+      roomCount: rooms.length,
       rooms: rooms,
       lowRents: lowHouse.rents,
       lowCommonfee: lowHouse.commonfee,
@@ -517,13 +520,73 @@ const filterLowcostList = (rawList: ResponseLeadTime[]) => {
     .sort((a, b) => a.lowRents[0] - b.lowRents[0]);
 };
 
-export const processLowcost = async () => {
+type LowcostAlertOptions = {
+  search: LeadTimeSearchOptions;
+  historyId: FIRESTORE_COLLECTION_HISTORY;
+  title?: string;
+  includes: (property: ResponseLeadTime) => boolean;
+  maxRooms?: number;
+};
+
+const limitLowcostRooms = (houses: TypeUrFilterLowcost[], maxRooms?: number) => {
+  if (!maxRooms) {
+    return houses;
+  }
+
+  let remainingRooms = maxRooms;
+
+  return houses.flatMap((house) => {
+    const rooms = house.rooms.slice(0, remainingRooms);
+    remainingRooms -= rooms.length;
+
+    return rooms.length ? [{
+      ...house,
+      roomCount: rooms.length,
+      rooms,
+      lowRents: rooms[0].rents,
+      lowCommonfee: rooms[0].commonfee,
+    }] : [];
+  });
+};
+
+const getNewlyAvailableRooms = (
+  current: TypeUrFilterLowcost[],
+  previous: TypeUrFilterLowcost[]
+) => {
+  const previousRoomKeys = new Set(
+    previous.flatMap((house) =>
+      house.rooms.map((room) => `${house.houseId}:${room.roomId}`)
+    )
+  );
+
+  return current.flatMap((house) => {
+    const rooms = house.rooms.filter(
+      (room) => !previousRoomKeys.has(`${house.houseId}:${room.roomId}`)
+    );
+
+    return rooms.length ? [{
+      ...house,
+      roomCount: rooms.length,
+      rooms,
+      lowRents: rooms[0].rents,
+      lowCommonfee: rooms[0].commonfee,
+    }] : [];
+  });
+};
+
+const processLowcostAlert = async ({
+  search,
+  historyId,
+  title,
+  includes,
+  maxRooms,
+}: LowcostAlertOptions) => {
   const result = {
-    messages: [] as Message[],
+    messages: [] as messagingApi.Message[],
     isNotSameStatus: false,
   };
 
-  const list = await fetchLeadTimeList<ResponseLeadTime[]>();
+  const list = await fetchLeadTimeList(search);
 
   if (!list) {
     result.messages = [
@@ -534,7 +597,10 @@ export const processLowcost = async () => {
     return result;
   }
 
-  const filterList = filterLowcostList(list);
+  const filterList = limitLowcostRooms(
+    filterLowcostList(list.filter(includes)),
+    maxRooms
+  );
 
   if (!filterList.length) {
     result.messages = [makeTextMessage("条件に合う物件がないです。")];
@@ -544,26 +610,161 @@ export const processLowcost = async () => {
   // compare previous push
   const historyLowcost = await getDocument<DocHistoryLowcost>({
     collection: FIRESTORE_COLLECTION.HISTORY,
-    id: FIRESTORE_COLLECTION_HISTORY.LOWCOST,
+    id: historyId,
   });
 
-  result.isNotSameStatus =
-    !historyLowcost ||
+  result.isNotSameStatus = !historyLowcost ||
     (historyLowcost && !objectEqualLength(historyLowcost.data, filterList));
 
   if (result.isNotSameStatus) {
     await setDocument<DocHistoryLowcost>({
       collection: FIRESTORE_COLLECTION.HISTORY,
-      id: FIRESTORE_COLLECTION_HISTORY.LOWCOST,
+      id: historyId,
       data: {
         data: filterList,
         timestamp: currentTimestamp(),
       },
     });
 
-    result.messages = [makeTextMessage(makeLowcostMessage(filterList))];
+    result.messages = [
+      ...(title ? [makeTextMessage(title)] : []),
+      ...makeLowcostGalleryMessages(filterList),
+    ];
   } else {
     result.messages = [makeTextMessage("前回と同じです。")];
+  }
+
+  return result;
+};
+
+export const processLowcost = async () =>
+  await processLowcostAlert({
+    search: OPTIONS.lowcost,
+    historyId: FIRESTORE_COLLECTION_HISTORY.LOWCOST,
+    includes: () => true,
+  });
+
+const rentalWatchHouseIdSet = new Set(rentalWatchHouseIds);
+
+const loadRentalWatchlist = async (): Promise<TypeUrFilterLowcost[] | null> => {
+  const areaResponses = await Promise.all(
+    rentalWatchAreas.map(async ({tdfk, area}) => ({
+      tdfk,
+      houses: await fetchAreaList<ResponseUrHouse[]>({
+        rent_low: "",
+        rent_high: "",
+        floorspace_low: "",
+        floorspace_high: "",
+        tdfk,
+        area,
+      }),
+    }))
+  );
+
+  if (areaResponses.some(({houses}) => houses === null)) {
+    return null;
+  }
+
+  const availableHouses = areaResponses.flatMap(({tdfk, houses}) =>
+    (houses ?? [])
+      .filter((house) =>
+        house.roomCount > 0 && rentalWatchHouseIdSet.has(house.id)
+      )
+      .map((house) => ({tdfk, house}))
+  );
+
+  const roomResponses = await Promise.all(
+    availableHouses.map(async ({tdfk, house}) => ({
+      tdfk,
+      house,
+      rooms: await fetchRoomList<ResponseUrRoom[]>({
+        rent_low: "",
+        rent_high: `${OPTIONS.shinjukuJr.rentHigh}`,
+        floorspace_low: "",
+        floorspace_high: "",
+        mode: "init",
+        id: house.id,
+        tdfk,
+      }),
+    }))
+  );
+
+  if (roomResponses.some(({rooms}) => rooms === null)) {
+    return null;
+  }
+
+  return roomResponses.flatMap(({tdfk, house, rooms: responseRooms}) => {
+    const rooms = (responseRooms ?? [])
+      .filter((room) =>
+        OPTIONS.shinjukuJr.rooms.includes(room.type) &&
+        !room.floor.startsWith("1階")
+      )
+      .map((room) => ({
+        roomId: room.id,
+        rents: convertRent(room.rent),
+        commonfee: convertCommonfee(room.commonfee),
+        name: room.name,
+        type: room.type,
+        floorspace: room.floorspace,
+        floor: room.floor,
+        url: room.urlDetail,
+      }))
+      .filter((room) => room.rents.every((rent) => rent > 0))
+      .sort((a, b) => a.rents[0] - b.rents[0]);
+
+    if (!rooms.length) {
+      return [];
+    }
+
+    return [{
+      houseId: house.id,
+      name: house.name,
+      tdfk,
+      roomCount: rooms.length,
+      rooms,
+      lowRents: rooms[0].rents,
+      lowCommonfee: rooms[0].commonfee,
+    }];
+  }).sort((a, b) => a.lowRents[0] - b.lowRents[0]);
+};
+
+export const processShinjukuWest = async () => {
+  const result = {
+    messages: [] as messagingApi.Message[],
+    isNotSameStatus: false,
+  };
+  const current = await loadRentalWatchlist();
+
+  if (current === null) {
+    return result;
+  }
+
+  const history = await getDocument<DocHistoryLowcost>({
+    collection: FIRESTORE_COLLECTION.HISTORY,
+    id: FIRESTORE_COLLECTION_HISTORY.COMMUTE_WATCH_V2,
+  });
+  const newRooms = history ? limitLowcostRooms(
+    getNewlyAvailableRooms(current, history.data),
+    48
+  ) : [];
+
+  await setDocument<DocHistoryLowcost>({
+    collection: FIRESTORE_COLLECTION.HISTORY,
+    id: FIRESTORE_COLLECTION_HISTORY.COMMUTE_WATCH_V2,
+    data: {
+      data: current,
+      timestamp: currentTimestamp(),
+    },
+  });
+
+  if (newRooms.length) {
+    result.isNotSameStatus = true;
+    result.messages = [
+      makeTextMessage(
+        "新着空室：家賃15万円以下（1K / 1DK / 1LDK）\n新宿JR通勤圏＋品川60分圏・管理50年以内・2階以上"
+      ),
+      ...makeLowcostGalleryMessages(newRooms),
+    ];
   }
 
   return result;

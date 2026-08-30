@@ -1,4 +1,4 @@
-import {db} from "../services/firebase";
+import {db} from "./admin";
 
 export const setDocument = async<T extends FirebaseFirestore.WithFieldValue<FirebaseFirestore.DocumentData>>({
   collection,

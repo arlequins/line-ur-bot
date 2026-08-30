@@ -1,38 +1,42 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * import {onCall} from "firebase-functions/v2/https";
- * import {onDocumentWritten} from "firebase-functions/v2/firestore";
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
-import * as functions from "firebase-functions";
-import {ENV} from "./constants";
-import v1ApiHandler from "./controllers/v1/api";
-import * as v1BatchHandler from "./controllers/v1/batch";
+import {onRequest} from "firebase-functions/v2/https";
+import {onMessagePublished} from "firebase-functions/v2/pubsub";
+import {onSchedule} from "firebase-functions/v2/scheduler";
+import {ENV, LINE_SECRETS} from "./constants";
+import lineWebhookApp from "./interfaces/http/line-app";
+import * as rentalJobs from "./interfaces/scheduler/rental-jobs";
 import {BATCH} from "./constants/batch";
+import {
+  BILLING_ALERT_TOPIC,
+  BudgetNotification,
+  notifyBillingCost,
+} from "./application/billing/notify-billing-cost";
 
-// api
-export const v1 = functions.region(ENV.REGION).https.onRequest(v1ApiHandler);
+// Public function names are kept stable so existing LINE and scheduler integrations
+// continue to work while the implementation evolves behind the interfaces layer.
+export const v2 = onRequest(
+  {region: ENV.REGION, secrets: LINE_SECRETS, maxInstances: 1},
+  lineWebhookApp
+);
 
-// batch
-export const batchFetchUrData = functions
-  .region(ENV.REGION)
-  .runWith(BATCH.runWith.fetchUrData)
-  .pubsub.schedule(BATCH.schedule.fetchUrData)
-  .timeZone(ENV.TIMEZONE)
-  .onRun(async () => await v1BatchHandler.fetchUrData());
+export const batchFetchShinjukuWestV2 = onSchedule(
+  {
+    region: ENV.REGION,
+    schedule: BATCH.schedule.fetchShinjukuWest,
+    timeZone: ENV.TIMEZONE,
+    secrets: LINE_SECRETS,
+    ...BATCH.runWith.fetchShinjukuWest,
+  },
+  rentalJobs.fetchShinjukuWest
+);
 
-export const batchFetchLowCost = functions
-  .region(ENV.REGION)
-  .runWith(BATCH.runWith.fetchLowCost)
-  .pubsub.schedule(BATCH.schedule.fetchLowCost)
-  .timeZone(ENV.TIMEZONE)
-  .onRun(async () => await v1BatchHandler.fetchLowCost());
-
-export const batchTransferBigQuery = functions
-  .region(ENV.REGION)
-  .runWith(BATCH.runWith.transferBigQuery)
-  .pubsub.schedule(BATCH.schedule.transferBigQuery)
-  .timeZone(ENV.TIMEZONE)
-  .onRun(async () => await v1BatchHandler.transferBigQuery());
+export const billingCostAlertV2 = onMessagePublished<BudgetNotification>(
+  {
+    topic: BILLING_ALERT_TOPIC,
+    region: ENV.REGION,
+    secrets: LINE_SECRETS,
+    retry: false,
+    maxInstances: 1,
+  },
+  async (event) =>
+    await notifyBillingCost(event.data.message.json, event.data.message.attributes)
+);

@@ -14,26 +14,22 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v5
         with:
-          node-version: 18.x
+          node-version: 24.x
+          cache: npm
+          cache-dependency-path: functions/package-lock.json
 
       - name: install
-        run: cd functions && npm install
+        run: cd functions && npm ci
 
-      - name: Make .env file
-        uses: SpicyPizza/create-envfile@v1.3
-        with:
-          directory: functions
-          envkey_ENVIRONMENT: ${{ vars.ENVIRONMENT }}
-          envkey_LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
-          envkey_LINE_CHANNEL_SECRET: ${{ secrets.LINE_CHANNEL_SECRET }}
-          envkey_LINE_PUSH_USER_ID: ${{ secrets.LINE_PUSH_USER_ID }}
+      - name: Create non-secret environment file
+        run: printf 'ENVIRONMENT=%s\n' "${{ vars.ENVIRONMENT }}" > functions/.env
 
       - name: Deploy Functions
-        uses: w9jds/firebase-action@master
+        uses: w9jds/firebase-action@v15.27.0
         with:
           args: deploy --project ${{ vars.FIREBASE_PROJECT_ID }}
         env:

@@ -1,8 +1,28 @@
+import {defineSecret} from "firebase-functions/params";
+
+export type LeadTimeSearchOptions = {
+  year: string;
+  rentHigh: number;
+  rooms: string[];
+  destinationStationCode: string;
+  maximumTravelMinutes: number;
+  maximumTransfers: number;
+  maximumPages: number;
+  prefectureCodes: string[];
+  requiresUnderfloorHeating?: boolean;
+};
+
 export enum ENV {
   REGION = "asia-northeast1",
   TIMEZONE = "Asia/Tokyo",
   BIGQUERY_DATASET_NAME = "ur_archives",
 }
+
+export const LINE_SECRETS = [
+  defineSecret("LINE_CHANNEL_ACCESS_TOKEN"),
+  defineSecret("LINE_CHANNEL_SECRET"),
+  defineSecret("LINE_PUSH_USER_ID"),
+];
 
 const setValues = () => {
   const environment = process.env.ENVIRONMENT;
@@ -29,13 +49,23 @@ export const VALUES = setValues();
 
 export const OPTIONS = {
   history: {
-    payloadRentHigh: 100000,
+    payloadRentHigh: 90000,
     rentHigh: 90000,
     rooms: ["1K", "1DK", "1LDK"],
   },
   lowcost: {
-    year: 25,
+    year: "25",
     rentHigh: 90000,
     rooms: ["1DK", "1LDK"],
+    destinationStationCode: "2334", // 新宿
+    maximumTravelMinutes: 90,
+    maximumTransfers: 5,
+    maximumPages: 1,
+    prefectureCodes: ["13", "14", "12"],
+    requiresUnderfloorHeating: true,
+  },
+  shinjukuJr: {
+    rentHigh: 150000,
+    rooms: ["1K", "1DK", "1LDK"],
   },
 };
