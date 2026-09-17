@@ -88,7 +88,7 @@ The monitored properties and rental ceiling live in:
 
 The current maximum monthly rent for the property wishlist is ¥90,000. General rental-history and lowest-price searches remain available through LINE commands but are not run on a schedule.
 
-A dedicated alert checks the fixed catalog at 09:00, 13:00, and 17:00 in `Asia/Tokyo`, including properties with no current vacancies. The catalog combines the existing western Tokyo/Saitama JR watchlist with Tokyo properties whose published train and property-access time from Shinagawa is no more than 60 minutes. It supports 1K, 1DK, or 1LDK layouts, excludes properties managed for more than 50 years, and preserves explicitly preferred catalog entries. Runtime notifications are limited to rooms at ¥150,000 or less above the first floor. The first check after a catalog revision establishes a silent baseline; subsequent checks only send rooms that were absent during the preceding check.
+A dedicated alert checks the fixed catalog at 09:00, 13:00, and 17:00 in `Asia/Tokyo`, including properties with no current vacancies. The catalog contains Tokyo properties whose published train and property-access time from Shinagawa is no more than 60 minutes. It supports 1K, 1DK, or 1LDK layouts and excludes properties managed for more than 50 years. Runtime notifications are limited to rooms at ¥150,000 or less above the first floor. The first check after a catalog revision establishes a silent baseline; subsequent checks only send rooms that were absent during the preceding check.
 
 ## Cost controls
 

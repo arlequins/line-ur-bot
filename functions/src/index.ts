@@ -18,15 +18,15 @@ export const v2 = onRequest(
   lineWebhookApp
 );
 
-export const batchFetchShinjukuWestV2 = onSchedule(
+export const batchFetchShinagawaTokyoV2 = onSchedule(
   {
     region: ENV.REGION,
-    schedule: BATCH.schedule.fetchShinjukuWest,
+    schedule: BATCH.schedule.fetchShinagawaTokyo,
     timeZone: ENV.TIMEZONE,
     secrets: LINE_SECRETS,
-    ...BATCH.runWith.fetchShinjukuWest,
+    ...BATCH.runWith.fetchShinagawaTokyo,
   },
-  rentalJobs.fetchShinjukuWest
+  rentalJobs.fetchShinagawaTokyo
 );
 
 export const billingCostAlertV2 = onMessagePublished<BudgetNotification>(

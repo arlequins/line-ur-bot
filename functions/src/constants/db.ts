@@ -13,8 +13,7 @@ export const enum FIRESTORE_COLLECTION_MASTER {
 export const enum FIRESTORE_COLLECTION_HISTORY {
   RECENT = "recent",
   LOWCOST = "lowcost",
-  SHINJUKU_JR = "shinjuku-jr",
-  COMMUTE_WATCH_V2 = "commute-watch-v2",
+  SHINAGAWA_TOKYO = "commute-watch-v2",
 }
 
 export const enum FIRESTORE_COLLECTION_IMAGES {

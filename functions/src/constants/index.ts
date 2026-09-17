@@ -64,7 +64,7 @@ export const OPTIONS = {
     prefectureCodes: ["13", "14", "12"],
     requiresUnderfloorHeating: true,
   },
-  shinjukuJr: {
+  shinagawaTokyo: {
     rentHigh: 150000,
     rooms: ["1K", "1DK", "1LDK"],
   },
