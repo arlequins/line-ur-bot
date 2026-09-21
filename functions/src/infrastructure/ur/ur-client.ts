@@ -9,42 +9,6 @@ const instance = create({
   timeout: 10_000,
 });
 
-const stationConditionBaseUrl = "https://www.ur-net.go.jp/chintai/common/xml/cost-time";
-
-const getStationCondition = async (search: LeadTimeSearchOptions) => {
-  const stationCode = search.destinationStationCode;
-  const stationConditionUrl = `${stationConditionBaseUrl}/cost-time_${stationCode.padStart(8, "0")}.xml`;
-
-  try {
-    const response = await create({timeout: 10_000}).get<string>(stationConditionUrl);
-    const stationCodes = [stationCode];
-
-    for (const station of response.data.matchAll(
-      /<stationTo code="(\d+)">([\s\S]*?)<\/stationTo>/g
-    )) {
-      const costTime = station[2].match(/<costTime>(\d+)<\/costTime>/)?.[1];
-      const changeTimes = station[2].match(/<changeTimes>(\d+)<\/changeTimes>/)?.[1];
-
-      if (
-        costTime && changeTimes &&
-        Number(costTime) <= search.maximumTravelMinutes &&
-        Number(changeTimes) <= search.maximumTransfers
-      ) {
-        stationCodes.push(station[1]);
-      }
-    }
-
-    return stationCodes.join(",");
-  } catch (error) {
-    logger.error({
-      message: "Unable to build the UR commute-time station filter",
-      stationCode,
-      error: isAxiosError(error) ? error.message : error,
-    });
-    throw error;
-  }
-};
-
 export const fetchAreaList = async<T>(payload: PayloadUrAreaList) => {
   try {
     logger.info({
@@ -108,12 +72,7 @@ export const fetchLeadTimeList = async (search: LeadTimeSearchOptions): Promise<
     if (search.requiresUnderfloorHeating) {
       params.append("facility_hotfloor", "1");
     }
-    params.append("station_cd", search.destinationStationCode);
-    params.append("station_condition", await getStationCondition(search));
-    params.append("station_cost", `${search.maximumTravelMinutes}`);
-    params.append("station_change", `${search.maximumTransfers}`);
     params.append("mode", "leadtime");
-    params.append("eki", search.destinationStationCode);
     params.append("block", "kanto");
     search.prefectureCodes.forEach((prefectureCode) => params.append("tdfk", prefectureCode));
     params.append("rireki_tdfk", "13");

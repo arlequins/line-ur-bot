@@ -4,9 +4,6 @@ export type LeadTimeSearchOptions = {
   year: string;
   rentHigh: number;
   rooms: string[];
-  destinationStationCode: string;
-  maximumTravelMinutes: number;
-  maximumTransfers: number;
   maximumPages: number;
   prefectureCodes: string[];
   requiresUnderfloorHeating?: boolean;
@@ -57,9 +54,6 @@ export const OPTIONS = {
     year: "25",
     rentHigh: 90000,
     rooms: ["1DK", "1LDK"],
-    destinationStationCode: "2334", // 新宿
-    maximumTravelMinutes: 90,
-    maximumTransfers: 5,
     maximumPages: 1,
     prefectureCodes: ["13", "14", "12"],
     requiresUnderfloorHeating: true,
