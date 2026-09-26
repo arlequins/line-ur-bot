@@ -77,6 +77,18 @@ const convertRent = (rent: string) => {
   return strs.map((str) => convertRentfee(str));
 };
 
+const getRoomRent = (room: ResponseUrRoom) => {
+  const directRent = room.rent.trim();
+
+  if (directRent) {
+    return directRent;
+  }
+
+  return (room.rent_normal || "")
+    .replace(/<[^>]+>/g, " ")
+    .match(/\d[\d,]*円(?:～\d[\d,]*円)?/)?.[0] || "";
+};
+
 const checkIsSkipSaveImage = (date: Dayjs, docImageMadori?: DocImageMadoriRoom) => {
   if (docImageMadori) {
     const lastSavedDate = docImageMadori.dates[docImageMadori.dates.length - 1];
@@ -679,7 +691,7 @@ const loadShinagawaTokyoWatchlist = async ():
       tdfk,
       house,
       rooms: await fetchRoomList<ResponseUrRoom[]>({
-        rent_low: "",
+        rent_low: `${OPTIONS.shinagawaTokyo.rentLow}`,
         rent_high: `${OPTIONS.shinagawaTokyo.rentHigh}`,
         floorspace_low: "",
         floorspace_high: "",
@@ -702,7 +714,7 @@ const loadShinagawaTokyoWatchlist = async ():
       )
       .map((room) => ({
         roomId: room.id,
-        rents: convertRent(room.rent),
+        rents: convertRent(getRoomRent(room)),
         commonfee: convertCommonfee(room.commonfee),
         name: room.name,
         type: room.type,
@@ -710,7 +722,12 @@ const loadShinagawaTokyoWatchlist = async ():
         floor: room.floor,
         url: room.urlDetail,
       }))
-      .filter((room) => room.rents.every((rent) => rent > 0))
+      .filter((room) =>
+        room.rents.every((rent) =>
+          rent >= OPTIONS.shinagawaTokyo.rentLow &&
+          rent <= OPTIONS.shinagawaTokyo.rentHigh
+        )
+      )
       .sort((a, b) => a.rents[0] - b.rents[0]);
 
     if (!rooms.length) {
@@ -762,7 +779,7 @@ export const processShinagawaTokyo = async () => {
     result.isNotSameStatus = true;
     result.messages = [
       makeTextMessage(
-        "新着空室：家賃15万円以下（1K / 1DK / 1LDK）\n品川60分圏・管理50年以内・2階以上"
+        "新着空室：家賃11万〜15万円（1K / 1DK / 1LDK）\n品川60分圏・管理50年以内・2階以上"
       ),
       ...makeLowcostGalleryMessages(newRooms),
     ];

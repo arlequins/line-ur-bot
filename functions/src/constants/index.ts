@@ -59,6 +59,7 @@ export const OPTIONS = {
     requiresUnderfloorHeating: true,
   },
   shinagawaTokyo: {
+    rentLow: 110000,
     rentHigh: 150000,
     rooms: ["1K", "1DK", "1LDK"],
   },
