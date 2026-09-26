@@ -779,7 +779,7 @@ export const processShinagawaTokyo = async () => {
     result.isNotSameStatus = true;
     result.messages = [
       makeTextMessage(
-        "新着空室：家賃11万〜15万円（1K / 1DK / 1LDK）\n品川60分圏・管理50年以内・2階以上"
+        "新着空室：家賃5万〜12万円（1K / 1DK / 1LDK）\n品川60分圏・管理50年以内・2階以上"
       ),
       ...makeLowcostGalleryMessages(newRooms),
     ];
